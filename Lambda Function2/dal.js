@@ -2,8 +2,12 @@
 AWS.config.region = 'us-west-2';
 
 const dynamodb = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
-
-exports.getUserById = (ID) => {
+exports = {
+    getUserById,
+    getIdByCookie,
+    saveCookie
+};
+function getUserById (ID) {
     const params = {
         "Key": {
             "ID": {
@@ -14,6 +18,39 @@ exports.getUserById = (ID) => {
     };
     const promise = new Promise((resolve, reject) => {
         dynamodb.getItem(params, (err, data) => {
+            resolve({ err, data });
+        });
+    });
+    return promise;
+}
+
+function getIdByCookie(cookie) {
+    const params = {
+        "Key": {
+            "Coolie": {
+                S: cookie
+            }
+        },
+        TableName: "Users"
+    };
+    const promise = new Promise((resolve, success) => {
+        dynamodb.getItem(params, (err, data) => {
+            resolve({ err, data });
+        });
+    });
+    return promise;
+}
+
+function saveCookie(cookie, ID) {
+    const params = {
+        TableName: 'Cookies', Item: {
+            cookie,
+            ID,
+            date: Date.now()
+        }
+    };
+    const promise = new Promise((resolve, success) => {
+        dynamodb.putItem(params, (err, data) => {
             resolve({ err, data });
         });
     });

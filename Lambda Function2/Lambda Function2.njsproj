@@ -39,6 +39,7 @@
     <Compile Include="api.js" />
     <Compile Include="callAnothoerLambda.js" />
     <Compile Include="dal.js" />
+    <Compile Include="loginManager.js" />
     <Compile Include="resetPassword.js" />
     <Compile Include="sender.js" />
     <Compile Include="_testdriver.js" />

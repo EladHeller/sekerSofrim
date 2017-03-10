@@ -4,7 +4,7 @@ const AWS = require('aws-sdk');
 AWS.config.region = 'us-west-2';
 
 const dynamodb = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
-
+const loginManager = require('./loginManager');
 const dal = require('./dal');
 
 function getDoneFunction(callback) {
@@ -13,13 +13,15 @@ function getDoneFunction(callback) {
         body: err ? err.message : JSON.stringify({ res }),
         headers: {
             'Content-Type': 'application/json',
-        },
+        }
     });
 }
 
 exports.getMessages = (event, context, callback) => {
     const done = getDoneFunction(callback);
-    dynamo.scan({ TableName: "Messages" }, done);
+    dynamo.scan({ TableName: "Messages" }, (err, data) => {
+        done(err, data.Items);
+    });
 }
 
 exports.resetPassword = (event, context, callback) => {
@@ -32,8 +34,8 @@ exports.resetPassword = (event, context, callback) => {
                 done(evt.err);
             } else if (!item) {
                 done(null, { userExist: false });
-            } else if (item.email || item.cellphoneNumber){
-                createUserPassword(event.body.ID, item.email && item.email.S, item.cellphoneNumber && item.cellphoneNumber.S)
+            } else if (item.email || item.cellphoneNumber) {
+                loginManager.createUserPassword(event.body.ID, item.email && item.email.S, item.cellphoneNumber && item.cellphoneNumber.S)
                     .then((evt) => {
                         done(evt.err, {
                             userExist: true,
@@ -64,7 +66,7 @@ exports.searchUserById = (event, context, callback) => {
             } else if (item.password) {
                 done(null, { userExist: true, hasPassword: true });
             } else if (item.email || item.cellphoneNumber) {
-                createUserPassword(body.ID, item.email && item.email.S, item.cellphoneNumber && item.cellphoneNumber.S)
+                loginManager.createUserPassword(body.ID, item.email && item.email.S, item.cellphoneNumber && item.cellphoneNumber.S)
                     .then((evt) => {
                         done(evt.err, {
                             userExist: true,
@@ -86,65 +88,31 @@ exports.searchUserById = (event, context, callback) => {
 
 exports.passwordLogin = (event, context, callback) => {
     const done = getDoneFunction(callback);
-
-    getUserById(event.body.ID).
+    
+    dal.getUserById(event.body.ID).
         then(evt => {
             const item = evt.data && evt.data.Item;
 
             if (evt.err) {
                 done(evt.err);
             } else if (!item) {
-                done(null, { userExist: false });
-            } else if (item.password) {
-                
+                done('משתמש לא נמצא');
+            } else if ((!item.password) || (item.password !== event.body.password)) {
+                done(null, {wrongPassword:true});
+            } else if (item.password === event.body.password) {
+                const cookieString = loginManager.generateCookie();
+                loginManager.saveCookie(cookieString, event.body.ID).then(evt => {
+                    if (evt.err) {
+                        done(evt.err);
+                    } else {
+                        context.done(null, {
+                            Cookie: cookieString
+                        });
+                    }
+                });
             }
         });
 };
-
-function createUserPassword(ID, mailAddress, phoneNumber) {
-    const sender = require('./sender');
-
-    const password = generatePassword();
-    const params = {
-        TableName: 'Users',
-        Key: {
-            ID: {
-                S: ID
-            }
-        },
-        UpdateExpression: 'SET #p = :p',
-        ExpressionAttributeNames: {
-            "#p": "password"
-        },
-        ExpressionAttributeValues: {
-            ":p": {
-                S: password
-            }
-        }
-    };
-
-    const promise = new Promise((resolve, reject) => {
-        dynamodb.updateItem(params, (err, data) => {
-            const msg = `סיסמתך החדשה לאתר סקר סופרים היא ${password}.`;
-            if (err) {
-                resolve({ err });
-            } else if (mailAddress) {
-                sender.sendMail(mailAddress, 'סיסמה חדשה לאתר סקר סופרים', msg)
-                    .then(resolve);
-            } else if (phoneNumber) {
-                sender.sendSMS(msg, phoneNumber)
-                    .then(resolve);
-            }
-        });
-    });
-    return promise;
-}
-
-function generatePassword() {
-    return String.fromCharCode(65 + Math.floor(Math.random() * 26)) +
-        String.fromCharCode(97 + Math.floor(Math.random() * 26)) +
-        Math.random().toString().substring(2, 7);
-}
 
 function guid() {
     function s4() {

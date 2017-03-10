@@ -1,0 +1,42 @@
+﻿AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: >-
+  A simple backend (read/write to DynamoDB) with a RESTful API endpoint using
+  Amazon API Gateway.
+Resources:
+  userById:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: api.searchUserById
+      Runtime: nodejs4.3
+      CodeUri: .
+      Description: >-
+        A simple backend (read/write to DynamoDB) with a RESTful API endpoint
+        using Amazon API Gateway.
+      MemorySize: 512
+      Timeout: 10
+      Role: 'arn:aws:iam::494520774061:role/service-role/fullAccess'
+      Events:
+        Api1:
+          Type: Api
+          Properties:
+            Path: /User/ById
+            Method: post
+  resetPassword:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: api.resetPassword
+      Runtime: nodejs4.3
+      CodeUri: .
+      Description: >-
+        A simple backend (read/write to DynamoDB) with a RESTful API endpoint
+        using Amazon API Gateway.
+      MemorySize: 512
+      Timeout: 10
+      Role: 'arn:aws:iam::494520774061:role/service-role/fullAccess'
+      Events:
+        Api1:
+          Type: Api
+          Properties:
+            Path: /User/resetPassword
+            Method: post

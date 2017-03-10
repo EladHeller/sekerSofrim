@@ -23,8 +23,10 @@ function generateCookie() {
 function getUserByCookie(cookie) {
     new Promise((resolve, reject) => {
         dal.getIdByCookie(cookie).then(evt => {
-            if (evt.err || !evt.data) {
+            if (evt.err) {
                 resolve({ err: evt.err });
+            } else if (!evt.data) {
+                resolve();
             } else {
                 dal.saveCookie(cookie, evt.data.item.ID)
                     .then(resolve);

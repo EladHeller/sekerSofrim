@@ -5,7 +5,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>Lambda Function2</Name>
     <RootNamespace>Lambda Function2</RootNamespace>
-    <StartupFile>_testdriver.js</StartupFile>
+    <StartupFile>driver\_testdriver.js</StartupFile>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -33,21 +33,20 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
   </PropertyGroup>
   <ItemGroup>
-    <None Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
+    <Compile Include="userDetailsApi.js" />
     <Compile Include="usersAPI.js" />
-    <Compile Include="callAnothoerLambda.js" />
     <Compile Include="dal.js" />
     <Compile Include="loginManager.js" />
     <Compile Include="api.js" />
     <Compile Include="sender.js" />
-    <Compile Include="_testdriver.js" />
+    <Compile Include="driver\_testdriver.js" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="default.yaml" />
-    <Content Include="simpleEvent.json" />
-    <Content Include="_sampleEvent.json" />
+    <Content Include="driver\simpleEvent.json" />
+    <Content Include="driver\_sampleEvent.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="driver\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsTools.targets" />
 </Project>

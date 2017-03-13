@@ -1,24 +1,18 @@
 ﻿'use strict';
 
-const AWS = require('aws-sdk');
-AWS.config.region = 'us-west-2';
-
-const dynamodb = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
 const loginManager = require('./loginManager');
 const dal = require('./dal');
+const awsProvider = require('./awsProvider');
 
-function getDoneFunction(callback) {
-    return (err, res) => callback(null, {
-        statusCode: err ? '400' : '200',
-        body: err ? err.message : JSON.stringify({ res }),
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    });
-}
+const logOut = (event, context, callback) => {
+    const done = awsProvider.getDoneFunction(callback);
+    dal.deleteCookie(event.Cookie).then(evt=>{
+        done(evt.err, evt.data);
+    })
+};
 
 const resetPassword = (event, context, callback) => {
-    const done = getDoneFunction(callback);
+    const done = awsProvider.getDoneFunction(callback);
     dal.getUserById(event.body.ID)
         .then((evt) => {
             const item = evt.data && evt.data.Item;
@@ -42,7 +36,7 @@ const resetPassword = (event, context, callback) => {
 }
 
 const searchUserById = (event, context, callback) => {
-    const done = getDoneFunction(callback);
+    const done = awsProvider.getDoneFunction(callback);
     const body = event.body || {};
 
     if (!body.ID) {
@@ -80,7 +74,7 @@ const searchUserById = (event, context, callback) => {
 };
 
 const passwordLogin = (event, context, callback) => {
-    const done = getDoneFunction(callback);
+    const done = awsProvider.getDoneFunction(callback);
     
     dal.getUserById(event.body.ID).
         then(evt => {
@@ -113,21 +107,24 @@ const passwordLogin = (event, context, callback) => {
 };
 
 const getConnectedUser = (event, context, callback) => {
-    const done = getDoneFunction(callback);
-    loginManager.getUserByCookie(event['Cookie']).then(evt => {
+    const done = awsProvider.getDoneFunction(callback);
+    dal.getUserByCookie(event.Cookie).then(evt => {
         done(evt.err, evt.data && evt.data.Item);
     });
 };
 
-function guid() {
-    function s4() {
-        return Math.floor((1 + Math.random()) * 0x10000)
-            .toString(16)
-            .substring(1);
-    }
-    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-        s4() + '-' + s4() + s4() + s4();
-}
+const requestUpdateUserDetails  = (event, context, callback) => {
+    let body = event.body;
+
+    dal.addUserConfirmation(body.ID,
+        body.firstName,
+        body.lastName, 
+        body.email,
+        body.cellphoneNumber, 
+        body.phoneNumber).then(evt => {
+        done(evt.err, evt.data && evt.data.Item);
+    });
+};
 
 exports.resetPassword = resetPassword;
 exports.searchUserById = searchUserById;

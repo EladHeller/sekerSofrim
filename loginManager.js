@@ -1,9 +1,7 @@
-﻿const AWS = require('aws-sdk');
-AWS.config.region = 'us-west-2';
+﻿'use strict';
 
 const dal = require('./dal');
 exports.generateCookie = generateCookie;
-exports.getUserByCookie = getUserByCookie;
 exports.createUserPassword = createUserPassword;
 exports.saveCookie = dal.saveCookie;
 
@@ -19,48 +17,17 @@ function generateCookie() {
     return cookieString;
 }
 
-function getUserByCookie(cookie) {
-    new Promise((resolve, reject) => {
-        dal.getIdByCookie(cookie).then(evt => {
-            if (evt.err) {
-                resolve({ err: evt.err });
-            } else if (!evt.data) {
-                resolve();
-            } else {
-                dal.saveCookie(cookie, evt.data.item.ID)
-                    .then(resolve);
-            }
-        })
-    });
-}
 
 function createUserPassword(ID, mailAddress, phoneNumber) {
     const sender = require('./sender');
 
     const password = generatePassword();
-    const params = {
-        TableName: 'Users',
-        Key: {
-            ID: {
-                S: ID
-            }
-        },
-        UpdateExpression: 'SET #p = :p',
-        ExpressionAttributeNames: {
-            "#p": "password"
-        },
-        ExpressionAttributeValues: {
-            ":p": {
-                S: password
-            }
-        }
-    };
 
     const promise = new Promise((resolve, reject) => {
-        dynamodb.updateItem(params, (err, data) => {
+        dal.updatePassword(ID,password).then(evt=>{
             const msg = `סיסמתך החדשה לאתר סקר סופרים היא ${password}.`;
-            if (err) {
-                resolve({ err });
+            if (evt.err) {
+                resolve({ err : evt.err});
             } else if (mailAddress) {
                 sender.sendMail(mailAddress, 'סיסמה חדשה לאתר סקר סופרים', msg)
                     .then(resolve);

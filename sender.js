@@ -1,4 +1,6 @@
-﻿const AWS = require('aws-sdk');
+﻿'use strict';
+
+const AWS = require('aws-sdk');
 AWS.config.region = 'us-west-2';
 
 exports.sendMail = sendMail;

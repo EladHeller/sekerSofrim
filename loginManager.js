@@ -2,12 +2,11 @@
 AWS.config.region = 'us-west-2';
 
 const dal = require('./dal');
-exports = {
-    generateCookie,
-    saveCookie: dal.saveCookie,
-    getUserByCookie,
-    createUserPassword
-};
+exports.generateCookie = generateCookie;
+exports.getUserByCookie = getUserByCookie;
+exports.createUserPassword = createUserPassword;
+exports.saveCookie = dal.saveCookie;
+
 function generateCookie() {
     var date = new Date();
 

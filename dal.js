@@ -2,11 +2,10 @@
 AWS.config.region = 'us-west-2';
 
 const dynamodb = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
-exports = {
-    getUserById,
-    getIdByCookie,
-    saveCookie
-};
+exports.getUserById = getUserById;
+exports.getIdByCookie = getIdByCookie;
+exports.saveCookie = saveCookie;
+    
 function getUserById (ID) {
     const params = {
         "Key": {

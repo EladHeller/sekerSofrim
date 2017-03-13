@@ -129,9 +129,7 @@ function guid() {
         s4() + '-' + s4() + s4() + s4();
 }
 
-exports = {
-    resetPassword,
-    searchUserById,
-    passwordLogin,
-    getConnectedUser
-};
+exports.resetPassword = resetPassword;
+exports.searchUserById = searchUserById;
+exports.passwordLogin = passwordLogin;
+exports.getConnectedUser = getConnectedUser;

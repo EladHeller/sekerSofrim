@@ -20,6 +20,4 @@ const getMessages = (event, context, callback) => {
         done(err, data.Items);
     });
 };
-exports = {
-    getMessages
-};
+exports.getMessages = getMessages;

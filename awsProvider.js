@@ -3,17 +3,31 @@
 exports.getDoneFunction = getDoneFunction;
 exports.authorize = authorize;
 exports.authorizeAdmin = authorizeAdmin;
+exports.api = api;
 
 const dal = require('./dal');
 
+function api(originalMethod){
+    return (event, context, callback)=>{
+        originalMethod(event,context,getDoneFunction(callback))
+    };    
+}
+
 function getDoneFunction(callback) {
-    return (err, res, statusCode) => callback(null, {
-        statusCode: statusCode || (err ? '400' : '200'),
-        body: err ? err.message : JSON.stringify({ res }),
-        headers: {
-            'Content-Type': 'application/json',
+    return (err, res, statusCode, cookieString, contentType) => {
+        const params = {
+            statusCode: statusCode || (err ? '400' : '200'),
+            body: err ? err.message : JSON.stringify({ res }),
+            headers: {
+                'Content-Type': contentType || 'application/json',
+            }
+        };
+        if (cookieString) {
+            params.Cookie = cookieString;
         }
-    });
+
+        callback(null, params);
+    };
 }
 
 function authorize(originalMethod, admin){
@@ -27,7 +41,7 @@ function authorize(originalMethod, admin){
                 done({err:"You don't have permissions for this action",data:null, status:401});
             } else {
                 event.body.ID = admin ? evt.data.Item.ID : evt.data.Item;
-                originalMethod(event, context, callback);
+                originalMethod(event, context, done);
             }
         });
     };

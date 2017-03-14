@@ -3,7 +3,6 @@
 const dal = require('./dal');
 exports.generateCookie = generateCookie;
 exports.createUserPassword = createUserPassword;
-exports.saveCookie = dal.saveCookie;
 
 function generateCookie() {
     var date = new Date();
@@ -16,7 +15,6 @@ function generateCookie() {
 
     return cookieString;
 }
-
 
 function createUserPassword(ID, mailAddress, phoneNumber) {
     const sender = require('./sender');

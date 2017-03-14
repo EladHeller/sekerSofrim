@@ -9,6 +9,7 @@ const dal = require('./dal');
 
 function api(originalMethod){
     return (event, context, callback)=>{
+        event.body = JSON.parse(event.body);
         originalMethod(event,context,getDoneFunction(callback))
     };    
 }
@@ -40,6 +41,7 @@ function authorize(originalMethod, admin){
             } else if (!evt.data || (admin && !evt.data.Item.isAdmin)){
                 done({err:"You don't have permissions for this action",data:null, status:401});
             } else {
+                event.body = JSON.parse(event.body);
                 event.body.ID = admin ? evt.data.Item.ID : evt.data.Item;
                 originalMethod(event, context, done);
             }

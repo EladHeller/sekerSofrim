@@ -9,7 +9,6 @@ const dal = require('./dal');
 
 function api(originalMethod){
     return (event, context, callback)=>{
-        event.body = JSON.parse(event.body);
         originalMethod(event,context,getDoneFunction(callback))
     };    
 }
@@ -18,7 +17,7 @@ function getDoneFunction(callback) {
     return (err, res, statusCode, cookieString, contentType) => {
         const params = {
             statusCode: statusCode || (err ? '400' : '200'),
-            body: err ? err.message : JSON.stringify({ res }),
+            body: err ? err.message || err : JSON.stringify({ res }),
             headers: {
                 'Content-Type': contentType || 'application/json',
             }
@@ -41,8 +40,7 @@ function authorize(originalMethod, admin){
             } else if (!evt.data || (admin && !evt.data.Item.isAdmin)){
                 done({err:"You don't have permissions for this action",data:null, status:401});
             } else {
-                event.body = JSON.parse(event.body);
-                event.body.ID = admin ? evt.data.Item.ID : evt.data.Item;
+                event.ID = admin ? evt.data.Item.ID : evt.data.Item;
                 originalMethod(event, context, done);
             }
         });

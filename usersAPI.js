@@ -11,7 +11,7 @@ const logOut = (event, context, callback) => {
 };
 
 const resetPassword = (event, context, callback) => {
-    dal.getUserById(event.body.ID)
+    dal.getUserById(event.ID)
         .then((evt) => {
             const item = evt.data && evt.data.Item;
 
@@ -20,7 +20,7 @@ const resetPassword = (event, context, callback) => {
             } else if (!item) {
                 callback(null, { userExist: false });
             } else if (item.email || item.cellphoneNumber) {
-                loginManager.createUserPassword(event.body.ID, item.email && item.email.S, item.cellphoneNumber && item.cellphoneNumber.S)
+                loginManager.createUserPassword(event.ID, item.email && item.email.S, item.cellphoneNumber && item.cellphoneNumber.S)
                     .then((evt) => {
                         callback(evt.err, {
                             userExist: true,
@@ -34,12 +34,10 @@ const resetPassword = (event, context, callback) => {
 }
 
 const searchUserById = (event, context, callback) => {
-    const body = event.body || {};
-
-    if (!body.ID) {
+    if (!event.ID) {
         callback('require body with ID param');
     } else {
-        dal.getUserById(body.ID)
+        dal.getUserById(event.ID)
         .then((evt) => {
             const item = evt.data && evt.data.Item;
 
@@ -50,7 +48,7 @@ const searchUserById = (event, context, callback) => {
             } else if (item.password) {
                 callback(null, { userExist: true, hasPassword: true });
             } else if (item.email || item.cellphoneNumber) {
-                loginManager.createUserPassword(body.ID, item.email && item.email.S, item.cellphoneNumber && item.cellphoneNumber.S)
+                loginManager.createUserPassword(event.ID, item.email && item.email.S, item.cellphoneNumber && item.cellphoneNumber.S)
                     .then((evt) => {
                         callback(evt.err, {
                             userExist: true,
@@ -71,7 +69,7 @@ const searchUserById = (event, context, callback) => {
 };
 
 const passwordLogin = (event, context, callback) => {
-    dal.getUserById(event.body.ID).
+    dal.getUserById(event.ID).
         then(evt => {
             const user = evt.data && evt.data.Item;
 
@@ -79,12 +77,12 @@ const passwordLogin = (event, context, callback) => {
                 callback(evt.err);
             } else if (!user) {
                 callback('משתמש לא נמצא');
-            } else if ((!user.password) || (user.password !== event.body.password)) {
+            } else if ((!user.password) || (user.password !== event.password)) {
                 callback(null, {wrongPassword:true});
-            } else if (user.password === event.body.password) {
+            } else if (user.password === event.password) {
                 const cookieString = loginManager.generateCookie();
                 dal.updateUserEnterTime(ID).then(()=>{
-                    dal.saveCookie(cookieString, event.body.ID).then(evt => {
+                    dal.saveCookie(cookieString, event.ID).then(evt => {
                         if (evt.err) {
                             callback(evt.err);
                         } else {
@@ -103,14 +101,12 @@ const getConnectedUser = (event, context, callback) => {
 };
 
 const requestUpdateUserDetails  = (event, context, callback) => {
-    let body = event.body;
-
-    dal.addUserConfirmation(body.ID,
-        body.firstName,
-        body.lastName, 
-        body.email,
-        body.cellphoneNumber, 
-        body.phoneNumber).then(evt => {
+    dal.addUserConfirmation(event.ID,
+        event.firstName,
+        event.lastName, 
+        event.email,
+        event.cellphoneNumber, 
+        event.phoneNumber).then(evt => {
         callback(evt.err, evt.data && evt.data.Item);
     });
 };

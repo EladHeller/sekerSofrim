@@ -28,7 +28,7 @@ const getUsersCSV =(event, context, callback) => {
 };
 
 const uploadUsersCSV =(event, context, callback) => {
-    let res = Papa.parse(event.body.file,{header: true});
+    let res = Papa.parse(event.file,{header: true});
     let users =  res.data;
     let errors = [];
     let results = [];

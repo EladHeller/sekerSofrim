@@ -24,11 +24,12 @@ const methodByResource = {
 function api(originalMethod){
     return (event, context, callback)=>{
         const cookie = event.Cookie;
+        const origin = event.headers.Origin;
         event = JSON.parse(event.body);
         
         event.Cookie = cookie;
         console.log(event);
-        originalMethod(event,context,getDoneFunction(callback));
+        originalMethod(event,context,getDoneFunction(callback,origin));
     };    
 }
 function isString(obj){
@@ -56,7 +57,7 @@ function getError(err){
     return error;
 }
 
-function getDoneFunction(callback) {
+function getDoneFunction(callback, origin) {
     return (err, res, statusCode, cookieString, contentType) => {
         console.log('getDoneFunction',err,res);
         try {
@@ -65,7 +66,7 @@ function getDoneFunction(callback) {
                 body: err ? getError(err) : JSON.stringify(res),
                 headers: {
                     'Content-Type': contentType || 'application/json',
-                    'Access-Control-Allow-Origin':'*'
+                    'Access-Control-Allow-Origin':origin
                 }
             };
             if (cookieString) {
@@ -82,7 +83,7 @@ function getDoneFunction(callback) {
 
 function authorize(originalMethod, admin){
     return (event, context, callback)=>{
-        const done = getDoneFunction(callback);
+        const done = getDoneFunction(callback, event.headers.Origin);
         if (event.Cookie) {
             const promise = admin ? dal.getUserByCookie(event.Cookie) : dal.getIdByCookie(event.Cookie);
             promise.then(evt=> {

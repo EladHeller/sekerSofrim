@@ -21,7 +21,7 @@ const resetPassword = (event, context, callback) => {
             } else if (!item) {
                 callback(null, { userExist: false });
             } else if (item.email || item.cellphoneNumber) {
-                loginManager.createUserPassword(event.ID, item.email && item.email.S, item.cellphoneNumber && item.cellphoneNumber.S)
+                loginManager.createUserPassword(event.ID, item.email, item.cellphoneNumber)
                     .then((evt) => {
                         callback(evt.err, {
                             userExist: true,
@@ -52,7 +52,7 @@ const searchUserById = (event, context, callback) => {
             } else if (item.password) {
                 callback(null, { userExist: true, hasPassword: true });
             } else if (item.email || item.cellphoneNumber) {
-                loginManager.createUserPassword(event.ID, item.email && item.email.S, item.cellphoneNumber && item.cellphoneNumber.S)
+                loginManager.createUserPassword(event.ID, item.email, item.cellphoneNumber)
                     .then((evt) => {
                         console.log(evt);
                         callback(evt.err, {

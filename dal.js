@@ -61,9 +61,10 @@ function deleteCookie(cookie) {
 function getUserByCookie(cookie) {
     const promise = new Promise((resolve, reject) => {
         getIdByCookie(cookie).then(evt => {
+
             if (evt.err) {
                 resolve({ err: evt.err });
-            } else if (!evt.data) {
+            } else if (!(evt.data && evt.data.Item)) {
                 resolve();
             } else {
                 getUserById(evt.data.Item.ID)

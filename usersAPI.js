@@ -111,7 +111,7 @@ const getConnectedUser = (event, context, callback) => {
     if (event.Cookie){
         dal.getUserByCookie(event.Cookie).then(evt => {
             console.log(evt);
-            callback(evt.err, evt.data && evt.data.Item);
+            callback(evt.err, {user :evt.data && evt.data.Item});
         })
         .catch(callback);
     } else {
@@ -137,3 +137,4 @@ exports.resetPassword = resetPassword;
 exports.searchUserById = searchUserById;
 exports.passwordLogin = passwordLogin;
 exports.getConnectedUser = getConnectedUser;
+exports.requestUpdateUserDetails = requestUpdateUserDetails;

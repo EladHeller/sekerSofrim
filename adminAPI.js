@@ -61,6 +61,10 @@ const uploadUsersCSV =(event, context, callback) => {
             .catch(err=>callback(err));
     }
 };
+const confirmUserDetails = (event, context, callback)=>{
+    
+};
 exports.uploadUsersCSV = uploadUsersCSV;
 exports.getUsersCSV = getUsersCSV;
 exports.getUserDetailsConfirms = getUserDetailsConfirms;
+exports.confirmUserDetails = confirmUserDetails;

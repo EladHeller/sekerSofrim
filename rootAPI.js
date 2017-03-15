@@ -19,6 +19,8 @@ const methodByResource = {
     '/getuserdetailsconfirms': authorizeAdmin(adminApi.getUserDetailsConfirms),
     '/getuserscsv': authorizeAdmin(adminApi.getUsersCSV),
     '/uploaduserscsv': authorizeAdmin(adminApi.uploadUsersCSV),
+    '/requestupdateuserdetails':api(usersAPI.requestUpdateUserDetails),
+    '/confirmuserdetails':authorizeAdmin(adminApi.confirmUserDetails)
 };
 
 function api(originalMethod){
@@ -90,7 +92,7 @@ function authorize(originalMethod, admin){
             promise.then(evt=> {
                 if (evt.err){
                     done({err:evt.err});
-                } else if (!evt.data || (admin && !evt.data.Item.isAdmin)){
+                } else if (!evt.data.Item || (admin && !(evt.data.Item && evt.data.Item.isAdmin))){
                     done({err:"You don't have permissions for this action",data:null, status:401});
                 } else {
                     event = JSON.parse(event.body);

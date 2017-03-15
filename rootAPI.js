@@ -27,7 +27,7 @@ function api(originalMethod){
     return (event, context, callback)=>{
         const cookie = event.headers.Cookie;
         const origin = event.headers.Origin;
-        event = JSON.parse(event.body);
+        event = JSON.parse(event.body) || {};
         
         event.Cookie = cookie;
         console.log(event);

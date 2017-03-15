@@ -107,11 +107,15 @@ const passwordLogin = (event, context, callback) => {
 };
 
 const getConnectedUser = (event, context, callback) => {
-    dal.getUserByCookie(event.Cookie).then(evt => {
-        console.log(evt);
-        callback(evt.err, evt.data && evt.data.Item);
-    })
-    .catch(callback);
+    if (event.Cookie){
+        dal.getUserByCookie(event.Cookie).then(evt => {
+            console.log(evt);
+            callback(evt.err, evt.data && evt.data.Item);
+        })
+        .catch(callback);
+    } else {
+        callback(null,{user:null});
+    }
 };
 
 const requestUpdateUserDetails  = (event, context, callback) => {

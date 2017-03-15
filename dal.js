@@ -60,20 +60,21 @@ function deleteCookie(cookie) {
 }
 
 function getUserByCookie(cookie) {
-    new Promise((resolve, reject) => {
-        dal.getIdByCookie(cookie).then(evt => {
+    const promise = new Promise((resolve, reject) => {
+        getIdByCookie(cookie).then(evt => {
             if (evt.err) {
                 resolve({ err: evt.err });
             } else if (!evt.data) {
                 resolve();
             } else {
-                dal.getUserById(evt.data.item.ID)
+                getUserById(evt.data.Item.ID)
                     .then(resolve)
                     .catch(reject);
             }
         })
         .catch(reject);
     });
+    return promise;
 }
 
 function addUserConfirmation(ID, firstName, lastName, email, cellphoneNumber, phoneNumber){
@@ -161,7 +162,7 @@ function getIdByCookie(cookie) {
                 S: cookie
             }
         },
-        TableName: "Users"
+        TableName: "Cookies"
     };
     const promise = new Promise((resolve, reject) => {
         dynamodb.getItem(params, (err, data) => {

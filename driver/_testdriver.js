@@ -13,7 +13,7 @@
 process.env['AWS_REGION'] = 'us-west-2'
 
 var fs = require('fs');
-var app = require('../usersAPI');
+var app = require('../rootAPI');
 
 // Load the sample event to be passed to Lambda. The _sampleEvent.json file can be modified to match
 // what you want Lambda to process on.
@@ -24,4 +24,4 @@ context.done = function () {
     console.log("Lambda Function Complete");
 }
 
-app.searchUserById(event, context);
+app.rootApi(event, context);

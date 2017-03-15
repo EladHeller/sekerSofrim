@@ -1,6 +1,5 @@
 ﻿'use strict';
 const dal = require('./dal');
-const awsProvider = require('./awsProvider');
 const updateUserDetails = (event, context, callback) => {
 
     dal.updateUserDetails(event.ID,
@@ -14,4 +13,4 @@ const updateUserDetails = (event, context, callback) => {
         });
 };
 
-exports.updateUserDetails = awsProvider.authorize(updateUserDetails);
+exports.updateUserDetails = updateUserDetails;

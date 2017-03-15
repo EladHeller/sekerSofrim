@@ -13,7 +13,7 @@ function sendMail(to, subject, text) {
             BccAddresses: [
                 'eladheller@gmail.com'
             ],
-            ToAddresses: ['eladheller@gmail.com']
+            ToAddresses: to
         },
         Message: {
             Body: {

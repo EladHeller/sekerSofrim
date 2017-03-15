@@ -1,3 +1,4 @@
+'use strict';
 const getCSVField = (cell) => {
     return cell ? cell.replace(/"/g,'""') : '';
 }

@@ -1,9 +1,8 @@
 'use strict';
 
 const dal = require('./dal');
-const awsProvider = require('./awsProvider');
 const utils = require('./utils');
-const Papa = require('./papaparse');
+const Papa = require('papaparse');
 
 const getUserDetailsConfirms = (event, context, callback)=>{
     dal.scanTable('ChangeDetailsConfirmations').then(evt=>{
@@ -57,6 +56,6 @@ const uploadUsersCSV =(event, context, callback) => {
             });
     }
 };
-exports.uploadUsersCSV = awsProvider.authorizeAdmin(uploadUsersCSV);
-exports.getUsersCSV = awsProvider.authorizeAdmin(getUsersCSV);
-exports.getUserDetailsConfirms = awsProvider.authorizeAdmin(getUserDetailsConfirms);
+exports.uploadUsersCSV = uploadUsersCSV;
+exports.getUsersCSV = getUsersCSV;
+exports.getUserDetailsConfirms = getUserDetailsConfirms;

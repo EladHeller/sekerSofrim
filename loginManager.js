@@ -10,7 +10,7 @@ function generateCookie() {
     // Get Unix milliseconds at current time plus 365 days
     date.setTime(+ date + (365 * 86400000)); //24 \* 60 \* 60 \* 1000
     const cookieVal = Math.random().toString(36).substring(7); // Generate a random cookie string
-    const domain = 'cofzlxjjjl.execute-api.us-west-2.amazonaws.com';
+    const domain = '7npxc1c5ll.execute-api.us-west-2.amazonaws.com';
     const cookieString = `myCookie=${cookieVal}; domain=${domain}; expires=${date.toGMTString()};`;
 
     return cookieString;

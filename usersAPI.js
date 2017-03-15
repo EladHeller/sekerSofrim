@@ -2,7 +2,6 @@
 
 const loginManager = require('./loginManager');
 const dal = require('./dal');
-const awsProvider = require('./awsProvider');
 
 const logOut = (event, context, callback) => {
     dal.deleteCookie(event.Cookie).then(evt=>{
@@ -35,7 +34,7 @@ const resetPassword = (event, context, callback) => {
 
 const searchUserById = (event, context, callback) => {
     if (!event.ID) {
-        callback('require body with ID param');
+        callback('require body with ID param',null,'400');
     } else {
         dal.getUserById(event.ID)
         .then((evt) => {
@@ -86,7 +85,7 @@ const passwordLogin = (event, context, callback) => {
                         if (evt.err) {
                             callback(evt.err);
                         } else {
-                            callback(null, user, 200, cookieString);
+                            callback(null, {user,Cookie: cookieString});
                         }
                     });
                 });
@@ -111,8 +110,8 @@ const requestUpdateUserDetails  = (event, context, callback) => {
     });
 };
 
-exports.logOut = awsProvider.api(logOut);
-exports.resetPassword = awsProvider.api(resetPassword);
-exports.searchUserById = awsProvider.api(searchUserById);
-exports.passwordLogin = awsProvider.api(passwordLogin);
-exports.getConnectedUser = awsProvider.api(getConnectedUser);
+exports.logOut = logOut;
+exports.resetPassword = resetPassword;
+exports.searchUserById = searchUserById;
+exports.passwordLogin = passwordLogin;
+exports.getConnectedUser = getConnectedUser;

@@ -23,7 +23,6 @@ const methodByResource = {
 
 function api(originalMethod){
     return (event, context, callback)=>{
-        console.log(event);
         const cookie = event.Cookie;
         event = JSON.parse(event.body);
         
@@ -37,7 +36,7 @@ function isString(obj){
 }
 
 function rootApi(event, context, callback){
-    console.log(event);
+    console.log(event.path);
     methodByResource[event.path.toLowerCase()](event, context, callback);
 }
 
@@ -52,26 +51,32 @@ function getError(err){
         } else {
             errorMsg = JSON.parse(err);
         }
-        error = {error: errorMsg};
+        error = JSON.stringify({errorMessage: errorMsg});
     }
     return error;
 }
 
 function getDoneFunction(callback) {
     return (err, res, statusCode, cookieString, contentType) => {
-        let params = {
-            statusCode: statusCode || (err ? '500' : '200'),
-            body: err ? getError(err) : JSON.stringify({ res }),
-            headers: {
-                'Content-Type': contentType || 'application/json',
-                'Access-Control-Allow-Origin':'*'
+        console.log('getDoneFunction',err,res);
+        try {
+            let params = {
+                statusCode: statusCode || (err ? '500' : '200'),
+                body: err ? getError(err) : JSON.stringify(res),
+                headers: {
+                    'Content-Type': contentType || 'application/json',
+                    'Access-Control-Allow-Origin':'*'
+                }
+            };
+            if (cookieString) {
+                params.headers['Set-Cookie'] = cookieString;
             }
-        };
-        if (cookieString) {
-            params.headers['Set-Cookie'] = cookieString;
+            callback(null, params);
+        
+        } catch (e){
+            callback(e);
         }
 
-        callback(null, params);
     };
 }
 
@@ -89,7 +94,8 @@ function authorize(originalMethod, admin){
                 event.ID = admin ? evt.data.Item.ID : evt.data.Item;
                 originalMethod(event, context, done);
             }
-        });
+        })
+        .catch(callback);
     };
 }
 

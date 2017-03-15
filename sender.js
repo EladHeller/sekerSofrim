@@ -41,7 +41,7 @@ function sendSMS(msg, phoneNumber) {
     const sns = new AWS.SNS({ apiVersion: '2010-03-31' });
     const setAttributeParams = {
         attributes: {
-            DefaultSenderID: defaultSenderId
+            DefaultSenderID: "SekerSofrim"
         }
     };
     const promise = new Promise((resolve, reject) => {

@@ -34,6 +34,7 @@ function updateUserEnterTime(ID){
     };
     const promise = new Promise((resolve, reject)=>{
         dynamodb.updateItem(params, (err,data)=>{
+            console.log(err, data);
             resolve({err,data});
         });
     });
@@ -51,6 +52,7 @@ function deleteCookie(cookie) {
     };
     const promise = new Promise((resolve, reject)=>{
         dynamodb.deleteItem(params, function(err, data) {
+            console.log(err, data);
             resolve({err,data});
         });
     });
@@ -66,9 +68,11 @@ function getUserByCookie(cookie) {
                 resolve();
             } else {
                 dal.getUserById(evt.data.item.ID)
-                    .then(resolve);
+                    .then(resolve)
+                    .catch(reject);
             }
         })
+        .catch(reject);
     });
 }
 
@@ -85,6 +89,7 @@ function addUserConfirmation(ID, firstName, lastName, email, cellphoneNumber, ph
     };
     const promise = new Promise((resolve, success) => {
         dynamodb.putItem(params, (err, data) => {
+            console.log(err, data);
             resolve({ err, data });
         });
     });
@@ -124,6 +129,7 @@ function updateUserDetails(UID, password, firstName, lastName, email, cellphoneN
 
     const promise = new Promise((resolve, reject) => {
         dynamodb.updateItem(params, (err, data) => {
+            console.log(err, data);
             resolve({err,data});
         });
     });
@@ -141,6 +147,7 @@ function getUserById (ID) {
     };
     const promise = new Promise((resolve, reject) => {
         dynamodb.getItem(params, (err, data) => {
+            console.log(err, data);
             resolve({ err, data });
         });
     });
@@ -156,8 +163,9 @@ function getIdByCookie(cookie) {
         },
         TableName: "Users"
     };
-    const promise = new Promise((resolve, success) => {
+    const promise = new Promise((resolve, reject) => {
         dynamodb.getItem(params, (err, data) => {
+            console.log(err, data);
             resolve({ err, data });
         });
     });
@@ -174,6 +182,7 @@ function saveCookie(cookie, ID) {
     };
     const promise = new Promise((resolve, success) => {
         dynamodb.putItem(params, (err, data) => {
+            console.log(err, data);
             resolve({ err, data });
         });
     });
@@ -201,6 +210,7 @@ function updatePassword(ID,password){
 
     const promise = new Promise((resolve, reject) => {
         dynamodb.updateItem(params, (err, data) => {
+            console.log(err, data);
             resolve({err,data});
         });
     });
@@ -224,24 +234,26 @@ function getUsersReport(){
     };
 
     const promise = new Promise((resolve,reject)=>{
-        dynamo.scan(params, (err, data) => returnScanResult(resolve));
+        dynamodb.scan(params, (err, data) => returnScanResult(resolve));
     });
     return promise;
 }
 
 function scanTable(tableName) {
+    console.log(tableName);
     const promise = new Promise((resolve,reject)=>{
-        dynamo.scan({ TableName: tableName }, returnScanResult(resolve));
+        dynamodb.scan({ TableName: tableName }, returnScanResult(resolve));
     });
     return promise;
 }
 
 function returnScanResult(resolve){
     return (err, data) => {
+        console.log(err, data);
         if (data && data.Items) {
-            for (let item of Items) {
+            for (let item of data.Items) {
                 for (let key in item){
-                    item[key] = item[k].S || item[key].N || item;
+                    item[key] = item[key].S || item[key].N || item;
                 }
             }
         }

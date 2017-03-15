@@ -27,11 +27,13 @@ function createUserPassword(ID, mailAddress, phoneNumber) {
             if (evt.err) {
                 resolve({ err : evt.err});
             } else if (mailAddress) {
-                sender.sendMail(mailAddress, 'סיסמה חדשה לאתר סקר סופרים', msg)
-                    .then(resolve);
+                sender.sendMail([mailAddress], 'סיסמה חדשה לאתר סקר סופרים', msg)
+                    .then(resolve)
+                    .catch(reject);
             } else if (phoneNumber) {
                 sender.sendSMS(msg, phoneNumber)
-                    .then(resolve);
+                    .then(resolve)
+                    .catch(reject);
             }
         });
     });

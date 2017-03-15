@@ -6,12 +6,15 @@ const Papa = require('papaparse');
 
 const getUserDetailsConfirms = (event, context, callback)=>{
     dal.scanTable('ChangeDetailsConfirmations').then(evt=>{
+        console.log(evt);
         callback(evt.err,evt.data);
-    });
+    })
+    .catch(err=>callback(err));
 };
 
 const getUsersCSV =(event, context, callback) => {
     dal.getUsersReport().then(evt=>{
+        console.log(evt);
         if (evt.err){
             callback(evt.err);
         } else {
@@ -23,7 +26,8 @@ const getUsersCSV =(event, context, callback) => {
             const csv = utils.json2csv(evt.data.Items, fields);
             callback(null,csv,200,null,'application/vnd.ms-excel');
         }
-    });
+    })
+    .catch(err=>callback(err));
 };
 
 const uploadUsersCSV =(event, context, callback) => {
@@ -50,10 +54,11 @@ const uploadUsersCSV =(event, context, callback) => {
                     if (errors.length) {
                         callback('There are some errors\n' + errors.join('\n'));
                     } else {
-                        callback(null,'Success!');
+                        callback(null,{message:'Success!'});
                     }
                 }
-            });
+            })
+            .catch(err=>callback(err));
     }
 };
 exports.uploadUsersCSV = uploadUsersCSV;

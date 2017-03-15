@@ -9,7 +9,7 @@ const messagesApi = require('./messagesApi');
 exports.rootApi = rootApi;
 
 const methodByResource = {
-    '/searchuserbyid': api(usersAPI.searchUserById),
+    '/idlogin': api(usersAPI.searchUserById),
     '/getconnecteduser': api(usersAPI.getConnectedUser),
     '/logout': api(usersAPI.logOut),
     '/passwordlogin': api(usersAPI.passwordLogin),

@@ -20,8 +20,8 @@ const resetPassword = (event, context, callback) => {
                 callback(evt.err);
             } else if (!item) {
                 callback(null, { userExist: false });
-            } else if (item.email || item.cellphoneNumber) {
-                loginManager.createUserPassword(event.ID, item.email, item.cellphoneNumber)
+            } else if (item.email || item.phone) {
+                loginManager.createUserPassword(event.ID, item.email, item.phone)
                     .then((evt) => {
                         callback(evt.err, {
                             userExist: true,
@@ -51,8 +51,8 @@ const searchUserById = (event, context, callback) => {
                 callback(null, { userExist: false });
             } else if (item.password) {
                 callback(null, { userExist: true, hasPassword: true });
-            } else if (item.email || item.cellphoneNumber) {
-                loginManager.createUserPassword(event.ID, item.email, item.cellphoneNumber)
+            } else if (item.email || item.phone) {
+                loginManager.createUserPassword(event.ID, item.email, item.phone)
                     .then((evt) => {
                         console.log(evt);
                         callback(evt.err, {
@@ -124,8 +124,8 @@ const requestUpdateUserDetails  = (event, context, callback) => {
         event.firstName,
         event.lastName, 
         event.email,
-        event.cellphoneNumber, 
-        event.phoneNumber).then(evt => {
+        event.phone, 
+        event.tel).then(evt => {
             console.log(evt);
             callback(evt.err, evt.data && evt.data.Item);
         })

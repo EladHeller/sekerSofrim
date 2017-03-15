@@ -37,7 +37,7 @@ function sendMail(to, subject, text) {
     return promise;
 }
 
-function sendSMS(msg, phoneNumber) {
+function sendSMS(msg, phone) {
     const sns = new AWS.SNS({ apiVersion: '2010-03-31' });
     const setAttributeParams = {
         attributes: {
@@ -49,12 +49,12 @@ function sendSMS(msg, phoneNumber) {
             if (err) {
                 resolve({ err, data });
             } else {
-                if (phoneNumber.startsWith('0')){
-                    phoneNumber = '+972' + phoneNumber.substr(1);
+                if (phone.startsWith('0')){
+                    phone = '+972' + phone.substr(1);
                 }
                 const smsParams = {
                     Message: msg,
-                    PhoneNumber: phoneNumber
+                    PhoneNumber: phone
                 };
                 sns.publish(smsParams, (err, data) => {
                     resolve({ err, data });

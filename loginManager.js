@@ -17,7 +17,7 @@ function generateCookie() {
     return {cookieString,cookieToken};
 }
 
-function createUserPassword(ID, mailAddress, phoneNumber) {
+function createUserPassword(ID, mailAddress, phone) {
     const sender = require('./sender');
 
     const password = generatePassword();
@@ -31,8 +31,8 @@ function createUserPassword(ID, mailAddress, phoneNumber) {
                 sender.sendMail([mailAddress], 'סיסמה חדשה לאתר סקר סופרים', msg)
                     .then(resolve)
                     .catch(reject);
-            } else if (phoneNumber) {
-                sender.sendSMS(msg, phoneNumber)
+            } else if (phone) {
+                sender.sendSMS(msg, phone)
                     .then(resolve)
                     .catch(reject);
             }

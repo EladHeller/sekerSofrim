@@ -6,8 +6,8 @@ const updateUserDetails = (event, context, callback) => {
         event.firstName && event.firstName.trim(),
         event.lastName && event.lastName.trim(),
         event.email  && event.email.trim(),
-        event.cellphoneNumber && event.cellphoneNumber.trim(),
-        event.phoneNumber && event.phoneNumber.trim()).then(evt=>{
+        event.phone && event.phone.trim(),
+        event.tel && event.tel.trim()).then(evt=>{
             console.log(evt);
             callback(evt.err,evt.data)
         })

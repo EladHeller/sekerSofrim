@@ -22,7 +22,7 @@ const getUsersCSV =(event, context, callback) => {
                 item.UID = item.ID
             });
             
-            const fields = ['UID','ID','firstName','lastName','email','cellphoneNumber','phoneNumber'];
+            const fields = ['UID','ID','firstName','lastName','email','phone','tel'];
             const csv = utils.json2csv(evt.data.Items, fields);
             callback(null,csv,200,null,'application/vnd.ms-excel');
         }
@@ -43,8 +43,8 @@ const uploadUsersCSV =(event, context, callback) => {
             user.firstName,
             user.lastName,
             user.email,
-            user.cellphoneNummber,
-            user.phoneNumber,
+            user.phone,
+            user.tel,
             user.ID).then(evt=> {
                 if (evt.error){
                     errors.push(evt.err);

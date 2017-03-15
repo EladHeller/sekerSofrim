@@ -76,15 +76,15 @@ function getUserByCookie(cookie) {
     return promise;
 }
 
-function addUserConfirmation(ID, firstName, lastName, email, cellphoneNumber, phoneNumber){
+function addUserConfirmation(ID, firstName, lastName, email, phone, tel){
     const params = {
         TableName: 'ChangeDetailsConfirmations', Item: {
-            ID,
-            firstName,
-            lastName,
-            email,
-            cellphoneNumber,
-            phoneNumber
+            ID:{S:ID},
+            firstName:{S:firstName},
+            lastName:{S:lastName},
+            email:{S:email},
+            phone:{S:phone},
+            tel:{S:tel}
         }
     };
     const promise = new Promise((resolve, success) => {
@@ -95,7 +95,7 @@ function addUserConfirmation(ID, firstName, lastName, email, cellphoneNumber, ph
     return promise;
 }
 
-function updateUserDetails(UID, password, firstName, lastName, email, cellphoneNumber, phoneNumber, id){
+function updateUserDetails(UID, password, firstName, lastName, email, phone, tel, id){
     const params = {
         TableName: 'Users',
         Key: {
@@ -105,15 +105,15 @@ function updateUserDetails(UID, password, firstName, lastName, email, cellphoneN
         },
         UpdateExpression: `SET ${id && '#i = :i, '}${password && '#p = :p, '}`+
             `${firstName && '#fn = :fn, '}${lastName && '#ln = :ln, '}${email && '#e = :e, '}`+
-            `${cellphoneNumber && '#cln = :cln, '}${phoneNumber && '#pn = :pn'}`,
+            `${phone && '#cln = :cln, '}${tel && '#pn = :pn'}`,
         ExpressionAttributeNames: {
             "#i": "ID",
             "#p": "password",
             "#fn": "firstName",
             "#ln": "lastName",
             "#e": "email",
-            "#cln": "cellphoneNumber",
-            "#pn": "phoneNumber"
+            "#cln": "phone",
+            "#pn": "tel"
         },
         ExpressionAttributeValues: {
             ":i": {S: ID},
@@ -121,8 +121,8 @@ function updateUserDetails(UID, password, firstName, lastName, email, cellphoneN
             ":fn": {S: firstName},
             ":ln": {S: lastName},
             ":e": {S: email},
-            ":cln": {S: cellphoneNumber},
-            ":pn": {S: phoneNumber}
+            ":cln": {S: phone},
+            ":pn": {S: tel}
         }
     };
 
@@ -228,8 +228,8 @@ function getUsersReport(){
             "#fn": "firstName",
             "#ln": "lastName",
             "#e": "email",
-            "#cln": "cellphoneNumber",
-            "#pn": "phoneNumber"
+            "#cln": "phone",
+            "#pn": "tel"
         }
     };
 

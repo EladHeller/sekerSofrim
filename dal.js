@@ -32,6 +32,7 @@ function updateUserEnterTime(ID){
             ":t": {S: new Date().toJSON()}
         }
     };
+    
     const promise = new Promise((resolve, reject)=>{
         dynamodb.updateItem(params, (err,data)=>{
             resolve({err,data});
@@ -43,7 +44,7 @@ function updateUserEnterTime(ID){
 function deleteCookie(cookie) {
     const params = {
         Key: {
-            "cookie": {
+            "Cookie": {
                 S: cookie
             }
         }, 
@@ -176,9 +177,9 @@ function getIdByCookie(cookie) {
 function saveCookie(cookie, ID) {
     const params = {
         TableName: 'Cookies', Item: {
-            cookie,
-            ID,
-            date: Date.now()
+            Cookie:{S:cookie},
+            ID: {S:ID},
+            date: {N:Date.now().toString()}
         }
     };
     const promise = new Promise((resolve, success) => {

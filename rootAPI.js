@@ -23,7 +23,7 @@ const methodByResource = {
 
 function api(originalMethod){
     return (event, context, callback)=>{
-        const cookie = event.Cookie;
+        const cookie = event.headers.Cookie;
         const origin = event.headers.Origin;
         event = JSON.parse(event.body);
         
@@ -66,7 +66,8 @@ function getDoneFunction(callback, origin) {
                 body: err ? getError(err) : JSON.stringify(res),
                 headers: {
                     'Content-Type': contentType || 'application/json',
-                    'Access-Control-Allow-Origin':origin
+                    'Access-Control-Allow-Origin':origin,
+                    'Access-Control-Allow-Credentials': true
                 }
             };
             if (cookieString) {

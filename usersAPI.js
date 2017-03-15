@@ -88,15 +88,16 @@ const passwordLogin = (event, context, callback) => {
             } else if ((!user.password) || (user.password !== event.password)) {
                 callback(null, {wrongPassword:true});
             } else if (user.password === event.password) {
-                const cookieString = loginManager.generateCookie();
-                dal.updateUserEnterTime(ID).then(()=>{
-                    dal.saveCookie(cookieString, event.ID).then(evt => {
+                const cookie = loginManager.generateCookie();
+                dal.updateUserEnterTime(event.ID).then(()=>{
+                    
+                    dal.saveCookie(cookie.cookieToken, event.ID).then(evt => {
                         console.log(evt);
                         
                         if (evt.err) {
                             callback(evt.err);
                         } else {
-                            callback(null, {user,Cookie: cookieString});
+                            callback(null, {user},200,cookie.cookieString);
                         }
                     })
                     .catch(callback);

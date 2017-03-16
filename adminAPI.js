@@ -21,7 +21,7 @@ const getUsersCSV =(event, context, callback) => {
                 item.UID = item.ID
             });
             
-            const fields = ['UID','ID','firstName','lastName','email','phone','tel'];
+            const fields = ['UID','ID','firstName','lastName','email','phone','tel','award'];
             const csv = utils.json2csv(evt.data.Items, fields);
             callback(null,csv,200,null,'application/vnd.ms-excel');
         }
@@ -44,7 +44,8 @@ const uploadUsersCSV =(event, context, callback) => {
             user.email && user.email.trim(),
             user.phone && user.phone.trim(),
             user.tel && user.tel.trim(),
-            user.ID && user.ID.trim()).then(evt=> {
+            user.ID && user.ID.trim(),
+            user.award && user.award.trim()).then(evt=> {
                 if (evt.error){
                     errors.push(evt.err);
                 }
@@ -74,7 +75,7 @@ const confirmUserDetails = (event, context, callback)=>{
         } else {
             dal.deleteConfirmDetails(event.ID)
             .then(evt=>{
-                callback(evt.err,evt.data);
+                callback(evt.err,{isSaved:true,ID:event.ID});
             })            
             .catch(callback);
         }

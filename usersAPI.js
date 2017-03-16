@@ -127,7 +127,7 @@ const requestUpdateUserDetails  = (event, context, callback) => {
         event.phone, 
         event.tel).then(evt => {
             console.log(evt);
-            callback(evt.err, evt.data && evt.data.Item);
+            callback(evt.err, {isLeggalDetails:true});
         })
         .catch(callback);
 };

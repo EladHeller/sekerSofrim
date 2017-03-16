@@ -15,6 +15,22 @@ exports.getUserByCookie = getUserByCookie;
 exports.scanTable = scanTable;
 exports.updateUserEnterTime = updateUserEnterTime;
 exports.getUsersReport = getUsersReport;
+exports.deleteConfirmDetails = deleteConfirmDetails;
+
+function deleteConfirmDetails(ID){
+    const params = {
+        Key: {
+            "ID": { S: ID }
+        }, 
+        TableName: "ChangeDetailsConfirmations"
+    };
+    const promise = new Promise((resolve, reject)=>{
+        dynamodb.deleteItem(params, function(err, data) {
+            resolve({err,data});
+        });
+    });
+    return promise;
+}
 
 function updateUserEnterTime(ID){
     const params = {
@@ -65,7 +81,7 @@ function getUserByCookie(cookie) {
             if (evt.err) {
                 resolve({ err: evt.err });
             } else if (!(evt.data && evt.data.Item)) {
-                resolve();
+                resolve({data:{user:null}});
             } else {
                 getUserById(evt.data.Item.ID)
                     .then(resolve)

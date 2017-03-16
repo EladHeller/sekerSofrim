@@ -6,10 +6,9 @@ const Papa = require('papaparse');
 
 const getUserDetailsConfirms = (event, context, callback)=>{
     dal.scanTable('ChangeDetailsConfirmations').then(evt=>{
-        console.log(evt);
         callback(evt.err,evt.data);
     })
-    .catch(err=>callback(err));
+    .catch(callback);
 };
 
 const getUsersCSV =(event, context, callback) => {
@@ -27,7 +26,7 @@ const getUsersCSV =(event, context, callback) => {
             callback(null,csv,200,null,'application/vnd.ms-excel');
         }
     })
-    .catch(err=>callback(err));
+    .catch(callback);
 };
 
 const uploadUsersCSV =(event, context, callback) => {
@@ -38,14 +37,14 @@ const uploadUsersCSV =(event, context, callback) => {
     let index = 0;
     for (let user of users) {
         dal.updateUserDetails(
-            user.UID, 
+            user.UID && user.UID.trim(), 
             null,
-            user.firstName,
-            user.lastName,
-            user.email,
-            user.phone,
-            user.tel,
-            user.ID).then(evt=> {
+            user.firstName && user.firstName.trim(),
+            user.lastName && user.lastName.trim(),
+            user.email && user.email.trim(),
+            user.phone && user.phone.trim(),
+            user.tel && user.tel.trim(),
+            user.ID && user.ID.trim()).then(evt=> {
                 if (evt.error){
                     errors.push(evt.err);
                 }
@@ -58,11 +57,29 @@ const uploadUsersCSV =(event, context, callback) => {
                     }
                 }
             })
-            .catch(err=>callback(err));
+            .catch(callback);
     }
 };
 const confirmUserDetails = (event, context, callback)=>{
-    
+    dal.updateUserDetails(event.ID,
+        null,
+        event.firstName && event.firstName.trim(),
+        event.lastName && event.lastName.trim(),
+        event.email  && event.email.trim(),
+        event.phone && event.phone.trim(),
+        event.tel && event.tel.trim())
+    .then(evt=>{
+        if (evt.err){
+            callback(evt.err);
+        } else {
+            dal.deleteConfirmDetails(event.ID)
+            .then(evt=>{
+                callback(evt.err,evt.data);
+            })            
+            .catch(callback);
+        }
+    })
+    .catch(callback);
 };
 exports.uploadUsersCSV = uploadUsersCSV;
 exports.getUsersCSV = getUsersCSV;

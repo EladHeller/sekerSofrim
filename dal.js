@@ -112,7 +112,7 @@ function addUserConfirmation(ID, firstName, lastName, email, phone, tel){
     return promise;
 }
 
-function updateUserDetails(UID, password, firstName, lastName, email, phone, tel, id){
+function updateUserDetails(UID, password, firstName, lastName, email, phone, tel, id, award){
     const params = {
         TableName: 'Users',
         Key: {
@@ -122,7 +122,7 @@ function updateUserDetails(UID, password, firstName, lastName, email, phone, tel
         },
         UpdateExpression: `SET ${id && '#i = :i, '}${password && '#p = :p, '}`+
             `${firstName && '#fn = :fn, '}${lastName && '#ln = :ln, '}${email && '#e = :e, '}`+
-            `${phone && '#cln = :cln, '}${tel && '#pn = :pn'}`,
+            `${phone && '#cln = :cln, '}${tel && '#pn = :pn, '}${award && '#aw = :aw'}`,
         ExpressionAttributeNames: {
             "#i": "ID",
             "#p": "password",
@@ -130,7 +130,8 @@ function updateUserDetails(UID, password, firstName, lastName, email, phone, tel
             "#ln": "lastName",
             "#e": "email",
             "#cln": "phone",
-            "#pn": "tel"
+            "#pn": "tel",
+            "#aw":"award"
         },
         ExpressionAttributeValues: {
             ":i": {S: ID},
@@ -139,7 +140,8 @@ function updateUserDetails(UID, password, firstName, lastName, email, phone, tel
             ":ln": {S: lastName},
             ":e": {S: email},
             ":cln": {S: phone},
-            ":pn": {S: tel}
+            ":pn": {S: tel},
+            ":aw": {S: award}
         }
     };
 

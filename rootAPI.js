@@ -9,29 +9,34 @@ const messagesApi = require('./messagesApi');
 exports.rootApi = rootApi;
 
 const methodByResource = {
-    '/idlogin': api(usersAPI.searchUserById),
-    '/getconnecteduser': api(usersAPI.getConnectedUser),
-    '/logout': api(usersAPI.logOut),
-    '/passwordlogin': api(usersAPI.passwordLogin),
-    '/resetpassword': api(usersAPI.resetPassword),
-    '/getmessages': api(messagesApi.getMessages),
-    '/updateuserdetails': authorize(userDetailsApi.updateUserDetails),
-    '/getuserdetailsconfirms': authorizeAdmin(adminApi.getUserDetailsConfirms),
-    '/getuserscsv': authorizeAdmin(adminApi.getUsersCSV),
-    '/uploaduserscsv': authorizeAdmin(adminApi.uploadUsersCSV),
-    '/requestupdateuserdetails':api(usersAPI.requestUpdateUserDetails),
-    '/confirmuserdetails':authorizeAdmin(adminApi.confirmUserDetails)
+    '/idlogin': api(usersAPI.searchUserById, 'POST'),
+    '/getconnecteduser': api(usersAPI.getConnectedUser, 'POST'),
+    '/logout': api(usersAPI.logOut, 'POST'),
+    '/passwordlogin': api(usersAPI.passwordLogin, 'POST'),
+    '/resetpassword': api(usersAPI.resetPassword, 'POST'),
+    '/getmessages': api(messagesApi.getMessages, 'POST'),
+    '/updateuserdetails': authorize(userDetailsApi.updateUserDetails, 'POST'),
+    '/getuserdetailsconfirms': authorizeAdmin(adminApi.getUserDetailsConfirms, 'POST'),
+    '/getuserscsv': authorizeAdmin(adminApi.getUsersCSV, 'GET'),
+    '/uploaduserscsv': authorizeAdmin(adminApi.uploadUsersCSV, 'POST'),
+    '/requestupdateuserdetails':api(usersAPI.requestUpdateUserDetails, 'POST'),
+    '/confirmuserdetails':authorizeAdmin(adminApi.confirmUserDetails, 'POST')
 };
 
-function api(originalMethod){
+function api(originalFunction, httpMethod){
     return (event, context, callback)=>{
-        const cookie = event.headers.Cookie;
-        const origin = event.headers.Origin;
-        event = JSON.parse(event.body) || {};
-        
-        event.Cookie = cookie;
-        console.log(event);
-        originalMethod(event,context,getDoneFunction(callback,origin));
+        const done = getDoneFunction(callback,event.headers.Origin);
+        if (event.httpMethod !== httpMethod){
+            done({message:'Method Not Allowed'},null,405);
+        } else {
+            const cookie = event.headers.Cookie;
+            
+            event = JSON.parse(event.body) || {};
+            
+            event.Cookie = cookie;
+            console.log(event);
+            originalFunction(event,context,done);
+        }
     };    
 }
 function isString(obj){
@@ -52,7 +57,7 @@ function getError(err){
         } else if (err.message) {
             errorMsg = err.message;
         } else {
-            errorMsg = JSON.parse(err);
+            errorMsg = err;
         }
         error = JSON.stringify({errorMessage: errorMsg});
     }
@@ -84,29 +89,31 @@ function getDoneFunction(callback, origin) {
     };
 }
 
-function authorize(originalMethod, admin){
+function authorize(originalFunction, httpMethod,admin){
     return (event, context, callback)=>{
         const done = getDoneFunction(callback, event.headers.Origin);
-        if (event.Cookie) {
-            const promise = admin ? dal.getUserByCookie(event.Cookie) : dal.getIdByCookie(event.Cookie);
+        if (event.httpMethod !== httpMethod){
+            done({message:'Method Not Allowed'},null,405);
+        } else if (!event.headers.Cookie) {
+            done({err:"You need to log on for this action",data:null, status:401});
+        } else {
+            const promise = admin ? dal.getUserByCookie(event.headers.Cookie) : dal.getIdByCookie(event.headers.Cookie);
             promise.then(evt=> {
                 if (evt.err){
                     done({err:evt.err});
                 } else if (!evt.data.Item || (admin && !(evt.data.Item && evt.data.Item.isAdmin))){
-                    done({err:"You don't have permissions for this action",data:null, status:401});
+                    done({message:"You don't have permissions for this action"},null, 401);
                 } else {
                     event = JSON.parse(event.body);
                     event.ID = admin ? evt.data.Item.ID : evt.data.Item;
-                    originalMethod(event, context, done);
+                    originalFunction(event, context, done);
                 }
             })
             .catch(callback);
-        } else {
-            done({err:"You don't have permissions for this action",data:null, status:401});
         }
     };
 }
 
-function authorizeAdmin(originalMethod){
-    return authorize(originalMethod, true);
+function authorizeAdmin(originalFunction, httpMethod){
+    return authorize(originalFunction, httpMethod, true);
 }

@@ -3,6 +3,7 @@
 const dal = require('./dal');
 const utils = require('./utils');
 const Papa = require('papaparse');
+const sender =require('./sender');
 
 const getUserDetailsConfirms = (event, context, callback)=>{
     dal.scanTable('ChangeDetailsConfirmations').then(evt=>{
@@ -75,7 +76,17 @@ const confirmUserDetails = (event, context, callback)=>{
         } else {
             dal.deleteConfirmDetails(event.ID)
             .then(evt=>{
-                callback(evt.err,{isSaved:true,ID:event.ID});
+                if (event.email) {
+                    sender.sendMail([event.email],'פרטיך באתר סקר סופרים עודכנו בהצלחה!', 'היכנס לאתר כדי לבדוק את זכאותך לתשלומי סופרים.')
+                    .then(evt=>{
+                        callback(evt.err,{isSaved:true,ID:event.ID});
+                    });
+                } else if (event.phone){
+                    sender.sendSMS('פרטיך באתר סקר סופרים עודכנו בהצלחה!',event.phone)
+                    .then(evt=>{
+                        callback(evt.err,{isSaved:true,ID:event.ID});
+                    });
+                }
             })            
             .catch(callback);
         }

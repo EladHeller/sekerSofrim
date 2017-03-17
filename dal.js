@@ -115,35 +115,22 @@ function addUserConfirmation(ID, firstName, lastName, email, phone, tel){
 function updateUserDetails(UID, password, firstName, lastName, email, phone, tel, id, award){
     const params = {
         TableName: 'Users',
-        Key: {
-            ID: {
-                S: UID
-            }
-        },
+        Key: {ID: {S: UID.toString()}},
         UpdateExpression: `SET ${id && '#i = :i, '}${password && '#p = :p, '}`+
             `${firstName && '#fn = :fn, '}${lastName && '#ln = :ln, '}${email && '#e = :e, '}`+
-            `${phone && '#cln = :cln, '}${tel && '#pn = :pn, '}${award && '#aw = :aw'}`,
-        ExpressionAttributeNames: {
-            "#i": "ID",
-            "#p": "password",
-            "#fn": "firstName",
-            "#ln": "lastName",
-            "#e": "email",
-            "#cln": "phone",
-            "#pn": "tel",
-            "#aw":"award"
-        },
-        ExpressionAttributeValues: {
-            ":i": {S: ID},
-            ":p": {S: password},
-            ":fn": {S: firstName},
-            ":ln": {S: lastName},
-            ":e": {S: email},
-            ":cln": {S: phone},
-            ":pn": {S: tel},
-            ":aw": {S: award}
-        }
+            `${phone && '#pn = :pn, '}${tel && '#tl = :tl, '}${award && '#aw = :aw'}`,
+        ExpressionAttributeNames: {},
+        ExpressionAttributeValues: {}
     };
+    if (id){params.ExpressionAttributeValues[":i"] = {S:id};params.ExpressionAttributeNames['#i'] = 'id';}
+    if (password){params.ExpressionAttributeValues[":p"] = {S:password};params.ExpressionAttributeNames['#p'] = 'password';}
+    if (firstName){params.ExpressionAttributeValues[":fn"] = {S:firstName};params.ExpressionAttributeNames['#fn'] = 'firstName';}
+    if (lastName){params.ExpressionAttributeValues[":ln"] = {S:lastName};params.ExpressionAttributeNames['#ln'] = 'lastName';}
+    if (email){params.ExpressionAttributeValues[":e"] = {S:email};params.ExpressionAttributeNames['#e'] = 'email';}
+    if (phone){params.ExpressionAttributeValues[":pn"] = {S:phone};params.ExpressionAttributeNames['#pn'] = 'phone';}
+    if (tel){params.ExpressionAttributeValues[":tl"] = {S:tel};params.ExpressionAttributeNames['#tl'] = 'tel';}
+    if (award){params.ExpressionAttributeValues[":aw"] = {S:award};params.ExpressionAttributeNames['#aw'] = 'award';}
+    
 
     const promise = new Promise((resolve, reject) => {
         dynamodb.updateItem(params, (err, data) => {

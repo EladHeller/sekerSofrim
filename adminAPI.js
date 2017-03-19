@@ -20,7 +20,7 @@ const getUsersCSV =(event, context, callback) => {
             evt.data.forEach(item=>{
                 item.id = item.ID;
             });
-            const fields = ['id','firstName','lastName','email','phone','tel','award'];
+            const fields = ['firstName','lastName','email','phone','tel','award','id'];
             const csv = utils.json2csv(evt.data, fields);
             callback(null,csv,200,null,'application/vnd.ms-excel');
         }

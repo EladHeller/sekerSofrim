@@ -108,7 +108,9 @@ function authorize(originalFunction, httpMethod,admin){
                     callback("You don't have permissions for this action",null, 401);
                 } else {
                     event = JSON.parse(event.body) || {};
-                    event.ID = evt.data.Item.ID;
+                    if (!admin){
+                        event.ID = evt.data.Item.ID;
+                    }
                     originalFunction(event, context, callback);
                 }
             })

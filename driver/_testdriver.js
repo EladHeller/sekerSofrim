@@ -34,18 +34,18 @@ var callback = (err,data) => {
     }
 }
 //userDetailsApi.updateUserDetails({ID:456456456,phone:'0546610723',password:'1111'}, context, callback)
-//adminAPI.getUsersCSV(event, context, callback);
-adminAPI.uploadUsersCSV({
-    file : `﻿ID,firstName,lastName,email,phone,tel,award
-="6666",="משה",="לוי",="tcdsvu3@gmail.com",="0546610723",="0112312312",="0"
-="123123123",="עוזי",="לוי",="tcdsvu3@gmail.com",="",="",=""
-="000002222",="מושיקו",="כהן",="",="0546610723",="123",=""
-="5555",="משה",="לוי",="tcdsvu3@gmail.com",="0546610723",="0112312312",="0"
-="000001111",="",="",="",="",="",=""
-="4444",="משה",="לוי",="tcdsvu3@gmail.com",="0546610723",="0112312312",=""
-="456456456",="משה",="לוי",="tcdsvu3@gmail.com",="0546610723",="0112312312",="45645"
-="3333",="משה",="לוי",="tcdsvu3@gmail.com",="0546610723",="0112312312",="0"`
-},context,callback)
+// adminAPI.getUsersCSV(event, context, callback);
+// adminAPI.uploadUsersCSV({
+//     file : `ID,firstName,lastName,email,phone,tel,award
+// ="6666",="משה",="לוי",="tcdsvu3@gmail.com",="0546610723",="0112312312",="0"
+// ="123123123",="עוזי",="לוי",="tcdsvu3@gmail.com",="",="",=""
+// ="000002222",="מושיקו",="כהן",="",="0546610723",="123",=""
+// ="5555",="משה",="לוי",="tcdsvu3@gmail.com",="0546610723",="0112312312",="0"
+// ="000001111",="",="",="",="",="",=""
+// ="4444",="משה",="לוי",="tcdsvu3@gmail.com",="0546610723",="0112312312",=""
+// ="456456456",="משה",="לוי",="tcdsvu3@gmail.com",="0546610723",="0112312312",="45645"
+// ="3333",="משה",="לוי",="tcdsvu3@gmail.com",="0546610723",="0112312312",="0"`
+// },context,callback)
 // app.rootApi({ 
 //     "path": "/updateUserDetails",
 //     "httpMethod": "POST",

@@ -17,7 +17,10 @@ const getUsersCSV =(event, context, callback) => {
         if (evt.err){
             callback(evt.err);
         } else {
-            const fields = ['ID','firstName','lastName','email','phone','tel','award'];
+            evt.data.forEach(item=>{
+                item.id = item.ID;
+            });
+            const fields = ['id','firstName','lastName','email','phone','tel','award'];
             const csv = utils.json2csv(evt.data, fields);
             callback(null,csv,200,null,'application/vnd.ms-excel');
         }
@@ -33,7 +36,7 @@ const uploadUsersCSV =(event, context, callback) => {
     let index = 0;
     for (let user of users) {
         dal.updateUserDetails(
-            user.ID && user.ID.trim(), 
+            user.id && user.id.trim(), 
             null,
             user.firstName && user.firstName.trim(),
             user.lastName && user.lastName.trim(),

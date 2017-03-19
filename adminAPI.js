@@ -12,25 +12,25 @@ const getUserDetailsConfirms = (event, context, callback)=>{
     .catch(callback);
 };
 
-const getUsersCSV =(event, context, callback) => {
+const getUsersReport =(event, context, callback) => {
     dal.getUsersReport().then(evt=>{
         if (evt.err){
             callback(evt.err);
         } else {
-            evt.data.forEach(item=>{
-                item.id = item.ID;
+            const fields = ['ID','firstName','lastName','email','phone','tel','award'];
+            let data = [];
+            data.push(fields);
+            evt.data.forEach(user => {
+                data.push(fields.map(field => user[field] ? user[field].toString() : ''));
             });
-            const fields = ['firstName','lastName','email','phone','tel','award','id'];
-            const csv = utils.json2csv(evt.data, fields);
-            callback(null,csv,200,null,'application/vnd.ms-excel');
+            callback(null,data);
         }
     })
     .catch(callback);
 };
 
-const uploadUsersCSV =(event, context, callback) => {
-    let res = Papa.parse(event.file.replace(/="/g,'"'),{header: true});
-    let users =  res.data;
+const uploadUsers =(event, context, callback) => {
+    let users =  res.event.users;
     let errors = [];
     let results = [];
     let index = 0;
@@ -90,7 +90,7 @@ const confirmUserDetails = (event, context, callback)=>{
     })
     .catch(callback);
 };
-exports.uploadUsersCSV = uploadUsersCSV;
-exports.getUsersCSV = getUsersCSV;
+exports.uploadUsers = uploadUsers;
+exports.getUsersReport = getUsersReport;
 exports.getUserDetailsConfirms = getUserDetailsConfirms;
 exports.confirmUserDetails = confirmUserDetails;

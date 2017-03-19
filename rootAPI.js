@@ -17,8 +17,8 @@ const methodByResource = {
     '/getmessages': api(messagesApi.getMessages, 'POST'),
     '/updateuserdetails': authorize(userDetailsApi.updateUserDetails, 'POST'),
     '/getuserdetailsconfirms': authorizeAdmin(adminApi.getUserDetailsConfirms, 'POST'),
-    '/usersresport.csv': authorizeAdmin(adminApi.getUsersCSV, 'POST'),
-    '/uploaduserscsv': authorizeAdmin(adminApi.uploadUsersCSV, 'POST'),
+    '/getusersreport': authorizeAdmin(adminApi.getUsersReport, 'POST'),
+    '/uploadusers': authorizeAdmin(adminApi.uploadUsers, 'POST'),
     '/requestupdateuserdetails':api(usersAPI.requestUpdateUserDetails, 'POST'),
     '/confirmuserdetails':authorizeAdmin(adminApi.confirmUserDetails, 'POST')
 };

@@ -1,3 +1,8 @@
-﻿{
-    "Password": "123456"
+﻿{ 
+    "path": "/idlogin",
+    "httpMethod": "POST",
+    "body": "{\"ID\":\"456456456\"}",
+    "headers":  { 
+        "Origin": "https://he.wikipedia.org"
+    }
 }

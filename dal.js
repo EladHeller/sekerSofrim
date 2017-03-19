@@ -100,10 +100,13 @@ function addUserConfirmation(ID, firstName, lastName, email, phone, tel){
             firstName:{S:firstName},
             lastName:{S:lastName},
             email:{S:email},
-            phone:{S:phone},
-            tel:{S:tel}
+            phone:{S:phone}
         }
     };
+    if (tel){
+        params.Item.tel = {S:tel};
+    }
+
     const promise = new Promise((resolve, success) => {
         dynamodb.putItem(params, (err, data) => {
             resolve({ err, data });
@@ -113,25 +116,19 @@ function addUserConfirmation(ID, firstName, lastName, email, phone, tel){
 }
 
 function updateUserDetails(UID, password, firstName, lastName, email, phone, tel, id, award){
-    const params = {
-        TableName: 'Users',
-        Key: {ID: {S: UID.toString()}},
-        UpdateExpression: `SET ${id && '#i = :i, '}${password && '#p = :p, '}`+
-            `${firstName && '#fn = :fn, '}${lastName && '#ln = :ln, '}${email && '#e = :e, '}`+
-            `${phone && '#pn = :pn, '}${tel && '#tl = :tl, '}${award && '#aw = :aw'}`,
-        ExpressionAttributeNames: {},
-        ExpressionAttributeValues: {}
+    const fields = {
+        p : {name:'password',value:password},
+        fn:{name:'firstName',value:firstName},
+        ln:{name:'lastName',value:lastName},
+        e:{name:'email',value:email},
+        pn:{name:'phone',value:phone},
+        tl:{name:'tel',value:tel},
+        i:{name:'id',value:id},
+        aw:{name:'award',value:award}
     };
-    if (id){params.ExpressionAttributeValues[":i"] = {S:id};params.ExpressionAttributeNames['#i'] = 'id';}
-    if (password){params.ExpressionAttributeValues[":p"] = {S:password};params.ExpressionAttributeNames['#p'] = 'password';}
-    if (firstName){params.ExpressionAttributeValues[":fn"] = {S:firstName};params.ExpressionAttributeNames['#fn'] = 'firstName';}
-    if (lastName){params.ExpressionAttributeValues[":ln"] = {S:lastName};params.ExpressionAttributeNames['#ln'] = 'lastName';}
-    if (email){params.ExpressionAttributeValues[":e"] = {S:email};params.ExpressionAttributeNames['#e'] = 'email';}
-    if (phone){params.ExpressionAttributeValues[":pn"] = {S:phone};params.ExpressionAttributeNames['#pn'] = 'phone';}
-    if (tel){params.ExpressionAttributeValues[":tl"] = {S:tel};params.ExpressionAttributeNames['#tl'] = 'tel';}
-    if (award){params.ExpressionAttributeValues[":aw"] = {S:award};params.ExpressionAttributeNames['#aw'] = 'award';}
-    
 
+    const params = createUpdateQuery('Users', {ID: UID.toString()},fields);
+    
     const promise = new Promise((resolve, reject) => {
         dynamodb.updateItem(params, (err, data) => {
             resolve({err,data});
@@ -151,7 +148,7 @@ function getUserById (ID) {
     };
     const promise = new Promise((resolve, reject) => {
         dynamodb.getItem(params, (err, data) => {
-            if (data.Item) {
+            if (data && data.Item) {
                 parseDynamoItem(data.Item);
             }
             resolve({ err, data });
@@ -266,4 +263,32 @@ function parseDynamoItem(item){
         item[key] = item[key].S || item[key].N || item;
     }
     return item;
+}
+
+function createUpdateQuery(tableName, objKey, objFields){
+    let query = {
+        TableName: tableName,
+        Key: {},
+        UpdateExpression: 'SET ',
+        ExpressionAttributeNames: {},
+        ExpressionAttributeValues: {}
+    };
+
+    for (let key in objKey) {
+        query.Key[key] = {S:objKey[key]};
+    }
+
+    const usedFields = Object.keys(objFields)
+        .filter(key=> (objFields[key].value !== null) && (objFields[key].value !== undefined));
+    for (let i = 0; i < (usedFields.length - 1); i++) {
+        appendFieldToUpdateQuery(query, usedFields[i], objFields, false);
+    }
+    appendFieldToUpdateQuery(query, usedFields[usedFields.length - 1], objFields, true);
+    return query;
+}
+
+function appendFieldToUpdateQuery(query, field, objFields, isLast){
+    query.ExpressionAttributeValues[":" + field] = {S:objFields[field].value};
+    query.ExpressionAttributeNames['#' + field] = objFields[field].name;
+    query.UpdateExpression += `#${field} = :${field}${isLast ? '' : ', '}`;
 }

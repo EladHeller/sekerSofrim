@@ -14,6 +14,8 @@ process.env['AWS_REGION'] = 'us-west-2'
 
 var fs = require('fs');
 var app = require('../rootAPI');
+var adminAPI = require('../adminAPI');
+var userDetailsApi = require('../userDetailsApi');
 
 // Load the sample event to be passed to Lambda. The _sampleEvent.json file can be modified to match
 // what you want Lambda to process on.
@@ -23,5 +25,22 @@ var context = {};
 context.done = function () {
     console.log("Lambda Function Complete");
 }
-
-app.rootApi(event, context);
+var callback = (err,data) => {
+    console.log("Lambda Function Complete");
+    if (err) {
+        console.error(err);
+    } else {
+        console.log(data);
+    }
+}
+//userDetailsApi.updateUserDetails({ID:456456456,phone:'0546610723',password:'1111'}, context, callback)
+//adminAPI.getUsersCSV(event, context, callback);
+app.rootApi({ 
+    "path": "/updateUserDetails",
+    "httpMethod": "POST",
+    "body": "{\"ID\":\"456456456\",\"firstName\":\"משה\",\"lastName\":\"לוי\",\"password\":\"1111\",\"phone\":\"0546610723\",\"tel\":\"0112312312\",\"email\":\"tcdsvu3@gmail.com\"}",
+    "headers":  { 
+        "Origin": "https://he.wikipedia.org",
+        "Cookie":"token=2pjayz257b9"
+    }
+}, context, callback);

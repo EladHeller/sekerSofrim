@@ -25,9 +25,8 @@ const methodByResource = {
 
 function api(originalFunction, httpMethod){
     return (event, context, callback)=>{
-        const done = getDoneFunction(callback,event.headers.Origin);
         if (event.httpMethod !== httpMethod){
-            done({message:'Method Not Allowed'},null,405);
+            callback({message:'Method Not Allowed'},null,405);
         } else {
             const cookie = event.headers.Cookie;
             
@@ -35,7 +34,7 @@ function api(originalFunction, httpMethod){
             
             event.Cookie = cookie;
             console.log(event);
-            originalFunction(event,context,done);
+            originalFunction(event,context,callback);
         }
     };    
 }
@@ -44,8 +43,13 @@ function isString(obj){
 }
 
 function rootApi(event, context, callback){
-    console.log(event.path);
-    methodByResource[event.path.toLowerCase()](event, context, callback);
+    const done = getDoneFunction(callback, event.headers.Origin);
+    try {
+        console.log(event.path);
+        methodByResource[event.path.toLowerCase()](event, context, done);
+    } catch (e){
+        done(e)
+    }
 }
 
 function getError(err){
@@ -91,22 +95,21 @@ function getDoneFunction(callback, origin) {
 
 function authorize(originalFunction, httpMethod,admin){
     return (event, context, callback)=>{
-        const done = getDoneFunction(callback, event.headers.Origin);
         if (event.httpMethod !== httpMethod){
-            done({message:'Method Not Allowed'},null,405);
+            callback('Method Not Allowed',null,405);
         } else if (!event.headers.Cookie) {
-            done({err:"You need to log on for this action",data:null, status:401});
+            callback("You need to log on for this action",null, 401);
         } else {
             const promise = admin ? dal.getUserByCookie(event.headers.Cookie) : dal.getIdByCookie(event.headers.Cookie);
             promise.then(evt=> {
                 if (evt.err){
-                    done({err:evt.err});
+                    callback({err:evt.err});
                 } else if (!evt.data.Item || (admin && !(evt.data.Item && evt.data.Item.isAdmin))){
-                    done({message:"You don't have permissions for this action"},null, 401);
+                    callback("You don't have permissions for this action",null, 401);
                 } else {
-                    event = JSON.parse(event.body);
-                    event.ID = admin ? evt.data.Item.ID : evt.data.Item;
-                    originalFunction(event, context, done);
+                    event = JSON.parse(event.body) || {};
+                    event.ID = evt.data.Item.ID;
+                    originalFunction(event, context, callback);
                 }
             })
             .catch(callback);

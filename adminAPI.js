@@ -16,7 +16,7 @@ const getUsersReport =(event, context, callback) => {
         if (evt.err){
             callback(evt.err);
         } else {
-            const fields = ['ID','firstName','lastName','email','phone','tel','award'];
+            const fields = ['ID','firstName','lastName','email','phone','tel','award','enterTime'];
             let data = [];
             data.push(fields);
             evt.data.forEach(user => {

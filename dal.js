@@ -16,7 +16,7 @@ exports.scanTable = scanTable;
 exports.updateUserEnterTime = updateUserEnterTime;
 exports.getUsersReport = getUsersReport;
 exports.deleteConfirmDetails = deleteConfirmDetails;
-
+exports.replaceMessages = replaceMessages;
 function deleteConfirmDetails(ID){
     const params = {
         Key: {
@@ -246,6 +246,45 @@ function getUsersReport(){
     return promise;
 }
 
+function replaceMessages(messages){
+    let params = {
+        RequestItems: {
+            "Messages": []
+        }
+    };
+    const promise = new Promise((resolve,reject)=>{
+        scanTable('Messages').then(evt=>{
+            if (evt.err){
+                resolve(evt);
+            } else {
+                evt.data && evt.data.forEach(msg=>{
+                    params.RequestItems.Messages.push({
+                        DeleteRequest : {
+                            Key: {
+                                ID : {S: msg.ID}
+                            }
+                        }
+                    });
+                });
+                messages.forEach(msg=>{
+                    params.RequestItems.Messages.push({
+                        PutRequest : {
+                            Item: {
+                                ID : {S: guid()},
+                                text: {S: msg}
+                            }
+                        }
+                    });
+                });
+                dynamodb.batchWriteItem(params, function(err, data) {
+                    resolve({err,data});
+                });
+            }
+        });
+    });
+    return promise;
+}
+
 function scanTable(tableName) {
     const promise = new Promise((resolve,reject)=>{
         dynamodb.scan({ TableName: tableName }, returnScanResult(resolve));
@@ -300,3 +339,13 @@ function appendFieldToUpdateQuery(query, field, objFields, isLast){
     query.ExpressionAttributeNames['#' + field] = objFields[field].name;
     query.UpdateExpression += `#${field} = :${field}${isLast ? '' : ', '}`;
 }
+
+function guid() {
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+    s4() + '-' + s4() + s4() + s4();
+}
+function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }

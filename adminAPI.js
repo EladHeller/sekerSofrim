@@ -28,6 +28,12 @@ const getUsersReport =(event, context, callback) => {
     .catch(callback);
 };
 
+const replaceMessages=(event, context, callback) => {
+    dal.replaceMessages(event.messages).then(evt=>{
+        callback(evt.err, evt.data && {message: 'success'});
+    });
+};
+
 const uploadUsers =(event, context, callback) => {
     let users =  event.users;
     let errors = [];
@@ -89,6 +95,7 @@ const confirmUserDetails = (event, context, callback)=>{
     })
     .catch(callback);
 };
+exports.replaceMessages = replaceMessages;
 exports.uploadUsers = uploadUsers;
 exports.getUsersReport = getUsersReport;
 exports.getUserDetailsConfirms = getUserDetailsConfirms;

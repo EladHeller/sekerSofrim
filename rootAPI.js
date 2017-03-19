@@ -20,7 +20,8 @@ const methodByResource = {
     '/getusersreport': authorizeAdmin(adminApi.getUsersReport, 'POST'),
     '/uploadusers': authorizeAdmin(adminApi.uploadUsers, 'POST'),
     '/requestupdateuserdetails':api(usersAPI.requestUpdateUserDetails, 'POST'),
-    '/confirmuserdetails':authorizeAdmin(adminApi.confirmUserDetails, 'POST')
+    '/confirmuserdetails':authorizeAdmin(adminApi.confirmUserDetails, 'POST'),
+    '/replacemessages':authorizeAdmin(adminApi.replaceMessages, 'POST')
 };
 
 function api(originalFunction, httpMethod){

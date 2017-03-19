@@ -17,7 +17,7 @@ const methodByResource = {
     '/getmessages': api(messagesApi.getMessages, 'POST'),
     '/updateuserdetails': authorize(userDetailsApi.updateUserDetails, 'POST'),
     '/getuserdetailsconfirms': authorizeAdmin(adminApi.getUserDetailsConfirms, 'POST'),
-    '/getuserscsv': authorizeAdmin(adminApi.getUsersCSV, 'GET'),
+    '/usersresport.csv': authorizeAdmin(adminApi.getUsersCSV, 'POST'),
     '/uploaduserscsv': authorizeAdmin(adminApi.uploadUsersCSV, 'POST'),
     '/requestupdateuserdetails':api(usersAPI.requestUpdateUserDetails, 'POST'),
     '/confirmuserdetails':authorizeAdmin(adminApi.confirmUserDetails, 'POST')
@@ -68,13 +68,21 @@ function getError(err){
     return error;
 }
 
+function getRes(res){
+    if(isString(res)){
+        return res;
+    } else {
+        return JSON.stringify(res);
+    }
+}
+
 function getDoneFunction(callback, origin) {
     return (err, res, statusCode, cookieString, contentType) => {
         console.log('getDoneFunction',err,res);
         try {
             let params = {
                 statusCode: statusCode || (err ? '500' : '200'),
-                body: err ? getError(err) : JSON.stringify(res),
+                body: err ? getError(err) : getRes(res),
                 headers: {
                     'Content-Type': contentType || 'application/json',
                     'Access-Control-Allow-Origin':origin,

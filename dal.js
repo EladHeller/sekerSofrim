@@ -115,7 +115,7 @@ function addUserConfirmation(ID, firstName, lastName, email, phone, tel){
     return promise;
 }
 
-function updateUserDetails(UID, password, firstName, lastName, email, phone, tel, id, award){
+function updateUserDetails(ID, password, firstName, lastName, email, phone, tel, award){
     const fields = {
         p : {name:'password',value:password},
         fn:{name:'firstName',value:firstName},
@@ -123,16 +123,19 @@ function updateUserDetails(UID, password, firstName, lastName, email, phone, tel
         e:{name:'email',value:email},
         pn:{name:'phone',value:phone},
         tl:{name:'tel',value:tel},
-        i:{name:'id',value:id},
         aw:{name:'award',value:award}
     };
 
-    const params = createUpdateQuery('Users', {ID: UID.toString()},fields);
+    const params = createUpdateQuery('Users', {ID: ID.toString()},fields);
     
     const promise = new Promise((resolve, reject) => {
-        dynamodb.updateItem(params, (err, data) => {
-            resolve({err,data});
-        });
+        if (!params) {
+            resolve({});
+        } else {
+            dynamodb.updateItem(params, (err, data) => {
+                resolve({err,data});
+            });
+        }
     });
     return promise;
 }
@@ -224,20 +227,21 @@ function updatePassword(ID,password){
 function getUsersReport(){
     const params = {
         TableName: 'Users',
-        ProjectionExpression: "#i, #t, #fn, #ln, #e, #cln, #pn", 
+        ProjectionExpression: "#i, #t, #fn, #ln, #e, #pn, #tl, #aw", 
         ExpressionAttributeNames: {
             "#i": "ID",
             "#t": "enterTime",
             "#fn": "firstName",
             "#ln": "lastName",
             "#e": "email",
-            "#cln": "phone",
-            "#pn": "tel"
+            "#pn": "phone",
+            "#tl": "tel",
+            "#aw": "award"
         }
     };
 
     const promise = new Promise((resolve,reject)=>{
-        dynamodb.scan(params, (err, data) => returnScanResult(resolve));
+        dynamodb.scan(params, returnScanResult(resolve));
     });
     return promise;
 }
@@ -279,12 +283,16 @@ function createUpdateQuery(tableName, objKey, objFields){
     }
 
     const usedFields = Object.keys(objFields)
-        .filter(key=> (objFields[key].value !== null) && (objFields[key].value !== undefined));
-    for (let i = 0; i < (usedFields.length - 1); i++) {
-        appendFieldToUpdateQuery(query, usedFields[i], objFields, false);
+        .filter(key=>(objFields[key].value !== '') && (objFields[key].value !== null) && (objFields[key].value !== undefined));
+    if (!usedFields.length){
+        return null;
+    } else {
+        for (let i = 0; i < (usedFields.length - 1); i++) {
+            appendFieldToUpdateQuery(query, usedFields[i], objFields, false);
+        }
+        appendFieldToUpdateQuery(query, usedFields[usedFields.length - 1], objFields, true);
+        return query;
     }
-    appendFieldToUpdateQuery(query, usedFields[usedFields.length - 1], objFields, true);
-    return query;
 }
 
 function appendFieldToUpdateQuery(query, field, objFields, isLast){

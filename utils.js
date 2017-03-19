@@ -4,13 +4,13 @@ const getCSVField = (cell) => {
 }
 
 const json2csv= (data, fields) => {
-    let csv = fields.join();
+    let csv = fields.join() + '\n';
     csv += data.map((item)=>{
         let csvString = '"';
         for (let i=0;i<(fields.length-1);i++){
             csvString +=  getCSVField(item[fields[i]]) +'","';
         }
-        csvString += getCSVField(item[fields.length-1]) +'"';
+        csvString += getCSVField(item[fields[fields.length-1]]) +'"';
         return csvString;
     }).join('\n');
 

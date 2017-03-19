@@ -14,16 +14,11 @@ const getUserDetailsConfirms = (event, context, callback)=>{
 
 const getUsersCSV =(event, context, callback) => {
     dal.getUsersReport().then(evt=>{
-        console.log(evt);
         if (evt.err){
             callback(evt.err);
         } else {
-            evt.data.Items.forEach(item=> {
-                item.UID = item.ID
-            });
-            
-            const fields = ['UID','ID','firstName','lastName','email','phone','tel','award'];
-            const csv = utils.json2csv(evt.data.Items, fields);
+            const fields = ['ID','firstName','lastName','email','phone','tel','award'];
+            const csv = utils.json2csv(evt.data, fields);
             callback(null,csv,200,null,'application/vnd.ms-excel');
         }
     })
@@ -38,14 +33,13 @@ const uploadUsersCSV =(event, context, callback) => {
     let index = 0;
     for (let user of users) {
         dal.updateUserDetails(
-            user.UID && user.UID.trim(), 
+            user.ID && user.ID.trim(), 
             null,
             user.firstName && user.firstName.trim(),
             user.lastName && user.lastName.trim(),
             user.email && user.email.trim(),
             user.phone && user.phone.trim(),
             user.tel && user.tel.trim(),
-            user.ID && user.ID.trim(),
             user.award && user.award.trim()).then(evt=> {
                 if (evt.error){
                     errors.push(evt.err);
@@ -55,7 +49,7 @@ const uploadUsersCSV =(event, context, callback) => {
                     if (errors.length) {
                         callback('There are some errors\n' + errors.join('\n'));
                     } else {
-                        callback(null,{message:'Success!'});
+                        callback(null,{message:'Success'});
                     }
                 }
             })

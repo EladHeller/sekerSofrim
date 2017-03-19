@@ -2,7 +2,6 @@
 
 const dal = require('./dal');
 const utils = require('./utils');
-const Papa = require('papaparse');
 const sender =require('./sender');
 
 const getUserDetailsConfirms = (event, context, callback)=>{
@@ -30,20 +29,20 @@ const getUsersReport =(event, context, callback) => {
 };
 
 const uploadUsers =(event, context, callback) => {
-    let users =  res.event.users;
+    let users =  event.users;
     let errors = [];
     let results = [];
     let index = 0;
     for (let user of users) {
         dal.updateUserDetails(
-            user.id && user.id.trim(), 
+            user.ID && user.ID.trim(), 
             null,
             user.firstName && user.firstName.trim(),
             user.lastName && user.lastName.trim(),
             user.email && user.email.trim(),
             user.phone && user.phone.trim(),
             user.tel && user.tel.trim(),
-            user.award && user.award.trim()).then(evt=> {
+            user.award && user.award.toString().trim()).then(evt=> {
                 if (evt.error){
                     errors.push(evt.err);
                 }

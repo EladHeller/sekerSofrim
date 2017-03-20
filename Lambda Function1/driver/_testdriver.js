@@ -55,4 +55,5 @@ var callback = (err,data) => {
 //        'לאוסקר יום הולדת'
 //    ]
 //},context,callback);
-sender.sendMail(['eladheller@gmail.com'], 'בדיקה כותרת', 'בדיקה תוכן')
+//sender.sendMail(['eladheller@gmail.com'], 'בדיקה כותרת', 'בדיקה תוכן')
+sender.sendSMS('בדיקה בדיקה', '0546610723')

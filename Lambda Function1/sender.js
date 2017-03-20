@@ -39,27 +39,17 @@ function sendMail(to, subject, text) {
 
 function sendSMS(msg, phone) {
     const sns = new AWS.SNS({ apiVersion: '2010-03-31' });
-    const setAttributeParams = {
-        attributes: {
-            DefaultSenderID: "SekerSofrim"
-        }
-    };
+    
     const promise = new Promise((resolve, reject) => {
-        sns.setSMSAttributes(setAttributeParams, (err, data) => {
-            if (err) {
-                resolve({ err, data });
-            } else {
-                if (phone.startsWith('0')){
-                    phone = '+972' + phone.substr(1);
-                }
-                const smsParams = {
-                    Message: msg,
-                    PhoneNumber: phone
-                };
-                sns.publish(smsParams, (err, data) => {
-                    resolve({ err, data });
-                });
-            }
+        if (phone.startsWith('0')){
+            phone = '+972' + phone.substr(1);
+        }
+        const smsParams = {
+            Message: msg,
+            PhoneNumber: phone
+        };
+        sns.publish(smsParams, (err, data) => {
+            resolve({ err, data });
         });
     });
     return promise;

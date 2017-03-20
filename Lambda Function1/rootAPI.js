@@ -120,6 +120,7 @@ function authorize(originalFunction, httpMethod, admin) {
                     if (!admin) {
                         event.ID = evt.data.Item.ID;
                     }
+                    console.log(event);
                     originalFunction(event, context, callback);
                 }
             })

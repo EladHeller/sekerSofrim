@@ -41,6 +41,11 @@ const uploadUsers =(event, context, callback) => {
     let results = [];
     let index = 0;
     for (let user of users) {
+        user.ID = user.ID ? user.ID.toString().trim() : '';
+        while(user.ID.length < 9){
+            user.ID = '0' + user.ID;
+        }
+
         dal.updateUserDetails(
             user.ID && user.ID.trim(), 
             null,

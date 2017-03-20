@@ -16,6 +16,7 @@ var fs = require('fs');
 var app = require('../rootAPI');
 var adminAPI = require('../adminAPI');
 var userDetailsApi = require('../userDetailsApi');
+var sender = require('../sender');
 
 // Load the sample event to be passed to Lambda. The _sampleEvent.json file can be modified to match
 // what you want Lambda to process on.
@@ -47,10 +48,11 @@ var callback = (err,data) => {
 //         "Cookie":"token=2pjayz257b9"
 //     }
 // }, context, callback);
-adminAPI.replaceMessages({
-    messages:[
-        'אחת שתיים שלוש אני אחשוורוש',
-        'שמחה רבה, אביב הגיע פסח בא. תפרו לי בגד עם כיסים מלאו כיסי באגוזים. שמחה רבה, אביב הגיע פסח בא. תפרו לי בגד עם כיסים מלאו כיסי באגוזים. שמחה רבה, אביב הגיע פסח בא. תפרו לי בגד עם כיסים מלאו כיסי באגוזים. שמחה רבה, אביב הגיע פסח בא. תפרו לי בגד עם כיסים מלאו כיסי באגוזים.',
-        'לאוסקר יום הולדת'
-    ]
-},context,callback);
+//adminAPI.replaceMessages({
+//    messages:[
+//        'אחת שתיים שלוש אני אחשוורוש',
+//        'שמחה רבה, אביב הגיע פסח בא. תפרו לי בגד עם כיסים מלאו כיסי באגוזים. שמחה רבה, אביב הגיע פסח בא. תפרו לי בגד עם כיסים מלאו כיסי באגוזים. שמחה רבה, אביב הגיע פסח בא. תפרו לי בגד עם כיסים מלאו כיסי באגוזים. שמחה רבה, אביב הגיע פסח בא. תפרו לי בגד עם כיסים מלאו כיסי באגוזים.',
+//        'לאוסקר יום הולדת'
+//    ]
+//},context,callback);
+sender.sendMail(['eladheller@gmail.com'], 'בדיקה כותרת', 'בדיקה תוכן')

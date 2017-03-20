@@ -27,7 +27,7 @@ function sendMail(to, subject, text) {
                 Charset: 'UTF-8'
             }
         },
-        Source: 'ssofrim@gmail.com'
+        Source: 'Seker Sofrim <ssofrim@gmail.com>'
     };
     const promise = new Promise((resolve, reject) => {
         ses.sendEmail(params, (err, data) => {

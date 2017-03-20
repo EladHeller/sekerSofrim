@@ -31,7 +31,8 @@ const getUsersReport =(event, context, callback) => {
 const replaceMessages=(event, context, callback) => {
     dal.replaceMessages(event.messages).then(evt=>{
         callback(evt.err, evt.data && {message: 'success'});
-    });
+    })
+    .catch(callback);
 };
 
 const uploadUsers =(event, context, callback) => {

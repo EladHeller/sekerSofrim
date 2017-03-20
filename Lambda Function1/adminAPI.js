@@ -41,20 +41,30 @@ const uploadUsers = (event, context, callback) => {
     let results = [];
     let index = 0;
     for (let user of users) {
-        user.ID = user.ID ? user.ID.toString().trim() : '';
+        for (let key in user) {
+            user[key] = user[key] ? user[key].toString().trim() : '';
+        }
         while (user.ID.length < 9) {
             user.ID = '0' + user.ID;
         }
+        if (user.phone && !(user.phone.startsWith('0') || user.phone.startsWith('+'))) {
+            user.phone = '0' + user.phone;
+        }
+
+        if (user.tel && !(user.tel.startsWith('0') || user.tel.startsWith('+'))) {
+            user.tel = '0' + user.tel;
+        }
+
 
         dal.updateUserDetails(
-            user.ID && user.ID.trim(),
+            user.ID,
             null,
-            user.firstName && user.firstName.trim(),
-            user.lastName && user.lastName.trim(),
-            user.email && user.email.trim(),
-            user.phone && user.phone.trim(),
-            user.tel && user.tel.trim(),
-            user.award && user.award.toString().trim()).then(evt => {
+            user.firstName,
+            user.lastName,
+            user.email,
+            user.phone,
+            user.tel,
+            user.award).then(evt => {
                 if (evt.error) {
                     errors.push(evt.err);
                 }

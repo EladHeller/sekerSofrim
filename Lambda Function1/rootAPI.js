@@ -86,7 +86,7 @@ function getDoneFunction(callback, origin) {
                 body: err ? getError(err) : getRes(res),
                 headers: {
                     'Content-Type': contentType || 'application/json',
-                    'Access-Control-Allow-Origin': origin || 'https://d3lxr8l5baka37.cloudfront.net',
+                    'Access-Control-Allow-Origin': origin || 'https://ssofrim.com',
                     'Access-Control-Allow-Credentials': true
                 }
             };

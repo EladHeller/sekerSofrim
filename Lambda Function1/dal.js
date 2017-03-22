@@ -127,7 +127,7 @@ function updateUserDetails(ID, password, firstName, lastName, email, phone, tel,
     };
 
     const params = createUpdateQuery('Users', { ID: ID.toString() }, fields);
-
+    console.log(params);
     const promise = new Promise((resolve, reject) => {
         if (!params) {
             resolve({});
@@ -312,9 +312,8 @@ function createUpdateQuery(tableName, objKey, objFields) {
     let query = {
         TableName: tableName,
         Key: {},
-        UpdateExpression: 'SET ',
-        ExpressionAttributeNames: {},
-        ExpressionAttributeValues: {}
+        UpdateExpression: '',
+        ExpressionAttributeNames: {}
     };
 
     for (let key in objKey) {
@@ -323,15 +322,37 @@ function createUpdateQuery(tableName, objKey, objFields) {
 
     const usedFields = Object.keys(objFields)
         .filter(key => (objFields[key].value !== '') && (objFields[key].value !== null) && (objFields[key].value !== undefined));
-    if (!usedFields.length) {
-        return null;
-    } else {
+    const removeFields = Object.keys(objFields)
+        .filter(key => objFields[key].value === '');
+    
+    if (removeFields.length){
+        query.UpdateExpression += 'REMOVE ';
+        for (let i = 0; i < (removeFields.length - 1); i++) {
+            appendRemovedFieldToUpdateQuery(query, removeFields[i], objFields, false);
+        }
+        appendRemovedFieldToUpdateQuery(query, removeFields[removeFields.length - 1], objFields, true);
+    } 
+    if (usedFields.length) {
+        if (query.UpdateExpression) {
+            query.UpdateExpression += ' ';
+        }
+        query.ExpressionAttributeValues = {};
+        query.UpdateExpression += 'SET ';
         for (let i = 0; i < (usedFields.length - 1); i++) {
             appendFieldToUpdateQuery(query, usedFields[i], objFields, false);
         }
         appendFieldToUpdateQuery(query, usedFields[usedFields.length - 1], objFields, true);
+    }
+    if (!query.UpdateExpression){
+        return null;
+    } else {
         return query;
     }
+}
+
+function appendRemovedFieldToUpdateQuery(query, field, objFields, isLast) {
+    query.ExpressionAttributeNames['#' + field] = objFields[field].name;
+    query.UpdateExpression += `#${field}${isLast ? '' : ', '}`;
 }
 
 function appendFieldToUpdateQuery(query, field, objFields, isLast) {

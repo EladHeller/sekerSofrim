@@ -34,7 +34,7 @@ var callback = (err,data) => {
         console.log(data);
     }
 }
-//userDetailsApi.updateUserDetails({ID:456456456,phone:'0546610723',password:'1111'}, context, callback)
+userDetailsApi.updateUserDetails({ID:456456456,phone:'0546610723',password:'0000', tel:''}, context, callback)
 //adminAPI.getUsersReport({}, context, callback);
 // adminAPI.uploadUsers({
 //     "users":[{"ID":"000006666","firstName":"משה","lastName":"לוי","email":"tcdsvu3@gmail.com","phone":"0546610723","tel":"0112312312","award":"0"},{"ID":"000005555","firstName":"משה","lastName":"לוי","email":"tcdsvu3@gmail.com","phone":"0546610723","tel":"0112312312","award":"0"},{"ID":"123123123","firstName":"עוזיאל","lastName":"לוי","email":"tcdsvu3@gmail.com","phone":"","tel":"","award":4000},{"ID":"000002222","firstName":"מושיקו","lastName":"כהן","email":"","phone":"0546610723","tel":"123","award":""},{"ID":"000001111","firstName":"","lastName":"","email":"","phone":"","tel":"","award":""},{"ID":"000003333","firstName":"משה","lastName":"לוי","email":"tcdsvu3@gmail.com","phone":"0546610723","tel":"0112312312","award":"0"},{"ID":"456456456","firstName":"משה","lastName":"לוי","email":"tcdsvu3@gmail.com","phone":"0546610723","tel":"0112312312","award":"45645"},{"ID":"000004444","firstName":"משה","lastName":"לוי","email":"tcdsvu3@gmail.com","phone":"0546610723","tel":"0112312312","award":"23432"}]
@@ -56,4 +56,4 @@ var callback = (err,data) => {
 //    ]
 //},context,callback);
 //sender.sendMail(['eladheller@gmail.com'], 'בדיקה כותרת', 'בדיקה תוכן')
-sender.sendSMS('בדיקה בדיקה', '0546610723')
+//sender.sendSMS('בדיקה בדיקה', '0546610723')

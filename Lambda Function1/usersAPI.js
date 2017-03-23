@@ -110,7 +110,7 @@ const passwordLogin = (event, context, callback) => {
 const getConnectedUser = (event, context, callback) => {
     if (event.Cookie){
         dal.getUserByCookie(event.Cookie).then(evt => {
-            dal.updateUserEnterTime(event.ID).then(()=>{
+            dal.updateUserEnterTime(evt.data.Item.ID).then(()=>{
                 callback(evt.err, {user :evt.data && evt.data.Item});
             })
             .catch(callback);

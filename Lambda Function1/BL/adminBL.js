@@ -68,7 +68,9 @@ function updateUsers(users){
                 }
                 }
             }
-        });
+        })
+        .catch(callback);
+
     });
 
     return promise;

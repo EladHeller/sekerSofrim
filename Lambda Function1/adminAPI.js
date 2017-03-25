@@ -39,7 +39,7 @@ const replaceMessages = (event, context, callback) => {
 const uploadUsers = (event, context, callback) => {
     let users = event.users;
     adminBL.updateUsers(users).then(evt=>{
-        callback(evt.err,evt.data && {message: 'succes'});
+        callback(evt.err,evt.data && {message: 'success'});
     })
     .catch(callback);
 };

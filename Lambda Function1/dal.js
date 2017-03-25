@@ -251,7 +251,7 @@ function updatePassword(ID, password) {
 function getUsersReport() {
     const params = {
         TableName: 'Users',
-        ProjectionExpression: "#i, #t, #fn, #ln, #e, #pn, #tl, #aw",
+        ProjectionExpression: "#i, #t, #fn, #ln, #e, #pn, #tl, #aw, #p, #ad",
         ExpressionAttributeNames: {
             "#i": "ID",
             "#t": "enterTime",
@@ -260,7 +260,9 @@ function getUsersReport() {
             "#e": "email",
             "#pn": "phone",
             "#tl": "tel",
-            "#aw": "award"
+            "#aw": "award",
+            "#p": "password",
+            "#ad": "isAdmin"
         }
     };
 

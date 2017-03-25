@@ -1,7 +1,7 @@
 'use strict';
 
 const dal = require('../dal');
-const MAX_USERS_UPDATE_COUNT = 4;
+const MAX_USERS_UPDATE_COUNT = 30;
 const USERS_WRITE_CAPACITY = 15;
 const USERS_READ_CAPACITY = 15;
 exports.updateUsers = updateUsers;

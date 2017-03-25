@@ -1,7 +1,9 @@
 'use strict';
 
 const dal = require('../dal');
-
+const MAX_USERS_UPDATE_COUNT = 4;
+const USERS_WRITE_CAPACITY = 15;
+const USERS_READ_CAPACITY = 15;
 exports.updateUsers = updateUsers;
 
 
@@ -31,48 +33,50 @@ function updateUsers(users){
             if (evt.err){
                 resolve({err:evt.err});
             } else {
-                let userToUpdate = [];
                 users.forEach(prepareUserToUpdate);
-                let usersToUpdate = users.filter(usr=> isUserToUpdate(usr, evt.data));
+                const usersToUpdate = users.filter(usr=> isUserToUpdate(usr, evt.data));
 
-                let errors = [];
-                let results = [];
-                let index = 0;
-                console.log('user to update ' + usersToUpdate);
+                console.log('user to update', usersToUpdate);
                 if (!usersToUpdate.length) {
                     resolve({ data: {message: 'Success'} });
+                } else if (usersToUpdate.length <= MAX_USERS_UPDATE_COUNT) {
+                    updateUsersDetails(usersToUpdate)
+                        .then(resolve)
+                        .catch((err)=>resolve({err}));
                 } else {
-                    for (let user of usersToUpdate) {
-                    dal.updateUserDetails(
-                        user.ID,
-                        null,
-                        user.firstName,
-                        user.lastName,
-                        user.email,
-                        user.phone,
-                        user.tel,
-                        user.award).then(evt => {
-                            if (evt.error) {
-                                errors.push(evt.err);
-                            }
-                            index++;
-                            if (index === usersToUpdate.length) {
-                                if (errors.length) {
-                                    resolve('There are some errors\n' + errors.join('\n'));
+                    dal.updateTableCapacity('Users', USERS_READ_CAPACITY, usersToUpdate.length).then(({err,data})=>{
+                        if (err) {
+                            resolve({err});
+                        } else {
+                            updateUsersDetails(usersToUpdate).then(({err,data})=>{
+                                if (err){
+                                    resolve({err});
                                 } else {
-                                    resolve({ data :{message: 'Success'} });
+                                    dal.updateTableCapacity('Users', USERS_READ_CAPACITY, USERS_WRITE_CAPACITY).then(({err})=>{
+                                        err && console.log('dal.updateTableCapacity', err);
+                                        resolve(data);
+                                    });
                                 }
-                            }
-                        })
-                        .catch(resolve);
-                }
+                            });
+                        }
+                    })
                 }
             }
         })
-        .catch(callback);
-
+        .catch((err)=>resolve({err}));
     });
 
+    return promise;
+}
+
+function updateUsersDetails(usersToUpdate){
+    const errors = [];
+    let index = 0;
+    const promise = new Promise((resolve,reject)=>{
+        dal.batchWriteUseres(usersToUpdate)
+            .then(resolve)
+            .catch((err)=>resolve({err}));
+    });
     return promise;
 }
 

@@ -17,6 +17,30 @@ exports.updateUserEnterTime = updateUserEnterTime;
 exports.getUsersReport = getUsersReport;
 exports.deleteConfirmDetails = deleteConfirmDetails;
 exports.replaceMessages = replaceMessages;
+exports.updateTableCapacity = updateTableCapacity;
+exports.batchWriteUseres = batchWriteUseres;
+
+function batchWriteUseres(users){
+     const params = {
+        RequestItems: {}
+     };
+
+     params.RequestItems.Users = users.map(user=>{
+        return{
+            PutRequest: {
+                Item: createDynamoItem(user)
+            }
+        };
+     });
+
+     const promise = new Promise((resolve,reject)=>{
+        dynamodb.batchWriteItem(params,(err,data)=>{
+            resolve({err,data});
+        })
+     });
+     return promise;
+}
+
 function deleteConfirmDetails(ID) {
     const params = {
         Key: {
@@ -359,6 +383,32 @@ function appendFieldToUpdateQuery(query, field, objFields, isLast) {
     query.ExpressionAttributeValues[":" + field] = { S: objFields[field].value };
     query.ExpressionAttributeNames['#' + field] = objFields[field].name;
     query.UpdateExpression += `#${field} = :${field}${isLast ? '' : ', '}`;
+}
+
+function updateTableCapacity(table, read, write){
+    const params = {
+        ProvisionedThroughput: {
+            ReadCapacityUnits: read,
+            WriteCapacityUnits: write
+        }, 
+        TableName: table
+    };
+    const promise = new Promise((resolve,reject)=>{
+        dynamodb.updateTable(params, function(err, data) {
+            resolve({err,data});
+        });
+    });
+    return promise;
+}
+
+function createDynamoItem(item){
+    const newItem ={};
+    for (let key in item){
+        if ((item[key] !== '') && (item[key] !== null) && (item[key] !== undefined)){
+            newItem[key] = {S:item[key]};
+        }
+    }
+    return newItem;
 }
 
 function guid() {

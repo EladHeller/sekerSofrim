@@ -129,6 +129,7 @@ const requestUpdateUserDetails  = (event, context, callback) => {
     dal.addUserConfirmation(event.ID,
         event.firstName,
         event.lastName, 
+        event.pseudonym, 
         event.email,
         event.phone, 
         event.tel).then(evt => {

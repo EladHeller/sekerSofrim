@@ -17,7 +17,7 @@ const getUsersReport = (event, context, callback) => {
         if (evt.err) {
             callback(evt.err);
         } else {
-            const fields = ['ID', 'firstName', 'lastName', 'email', 'phone', 'tel', 'award', 'enterTime','password','isAdmin'];
+            const fields = ['ID', 'firstName', 'lastName', 'pseudonym','email', 'phone', 'tel', 'award', 'enterTime','password','isAdmin'];
             let data = [];
             data.push(fields);
             evt.data.forEach(user => {
@@ -49,6 +49,7 @@ const confirmUserDetails = (event, context, callback) => {
         null,
         event.firstName && event.firstName.trim(),
         event.lastName && event.lastName.trim(),
+        event.pseudonym && event.pseudonym.trim(),
         event.email && event.email.trim(),
         event.phone && event.phone.trim(),
         event.tel && event.tel.trim())

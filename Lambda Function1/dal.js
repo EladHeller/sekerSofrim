@@ -117,12 +117,13 @@ function getUserByCookie(cookie) {
     return promise;
 }
 
-function addUserConfirmation(ID, firstName, lastName, email, phone, tel) {
+function addUserConfirmation(ID, firstName, lastName, pseudonym, email, phone, tel) {
     const params = {
         TableName: 'ChangeDetailsConfirmations', Item: {
             ID: { S: ID },
             firstName: { S: firstName },
             lastName: { S: lastName },
+            pseudonym : {S:pseudonym},
             email: { S: email },
             phone: { S: phone }
         }
@@ -139,11 +140,12 @@ function addUserConfirmation(ID, firstName, lastName, email, phone, tel) {
     return promise;
 }
 
-function updateUserDetails(ID, password, firstName, lastName, email, phone, tel, award) {
+function updateUserDetails(ID, password, firstName, lastName, pseudonym, email, phone, tel, award) {
     const fields = {
         p: { name: 'password', value: password },
         fn: { name: 'firstName', value: firstName },
         ln: { name: 'lastName', value: lastName },
+        ln: { name: 'pseudonym', value: pseudonym },
         e: { name: 'email', value: email },
         pn: { name: 'phone', value: phone },
         tl: { name: 'tel', value: tel },
@@ -251,12 +253,13 @@ function updatePassword(ID, password) {
 function getUsersReport() {
     const params = {
         TableName: 'Users',
-        ProjectionExpression: "#i, #t, #fn, #ln, #e, #pn, #tl, #aw, #p, #ad",
+        ProjectionExpression: "#i, #t, #fn, #ln, #pn, #e, #pn, #tl, #aw, #p, #ad",
         ExpressionAttributeNames: {
             "#i": "ID",
             "#t": "enterTime",
             "#fn": "firstName",
             "#ln": "lastName",
+            "#pn":"pseudonym",
             "#e": "email",
             "#pn": "phone",
             "#tl": "tel",

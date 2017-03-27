@@ -82,7 +82,7 @@ function updateUsersDetails(usersToUpdate){
 
 function prepareUserToUpdate(user) {
     for (let key in user) {
-        user[key] = user[key] ? user[key].toString().trim() : '';
+        user[key] = ((user[key] !== null) && (user[key] !== undefined)) ? user[key].toString().trim() : '';
     }
     while (user.ID.length < 9) {
         user.ID = '0' + user.ID;

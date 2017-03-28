@@ -44,7 +44,11 @@ function isString(obj) {
 }
 
 function rootApi(event, context, callback) {
-    const done = getDoneFunction(callback, event.headers.Origin);
+    let origin = 'https://ssofrim.com';
+    if (event.headers.Origin && event.headers.Origin.startsWith('http://localhost:')){
+        origin = event.headers.Origin;
+    }
+    const done = getDoneFunction(callback, origin);
     try {
         console.log(event.path);
         methodByResource[event.path.toLowerCase()](event, context, done);
@@ -86,7 +90,7 @@ function getDoneFunction(callback, origin) {
                 body: err ? getError(err) : getRes(res),
                 headers: {
                     'Content-Type': contentType || 'application/json',
-                    'Access-Control-Allow-Origin': origin || 'https://ssofrim.com',
+                    'Access-Control-Allow-Origin': origin,
                     'Access-Control-Allow-Credentials': true
                 }
             };

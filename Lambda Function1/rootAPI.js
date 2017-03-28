@@ -118,7 +118,7 @@ function authorize(originalFunction, httpMethod, admin) {
                 } else {
                     event = JSON.parse(event.body) || {};
                     if (!admin) {
-                        event.ID = evt.data.Item.ID;
+                        event.ID = evt.data.Item.UID;
                     }
                     console.log(event);
                     originalFunction(event, context, callback);

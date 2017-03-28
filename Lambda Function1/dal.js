@@ -20,12 +20,21 @@ exports.replaceMessages = replaceMessages;
 exports.updateTableCapacity = updateTableCapacity;
 exports.batchWriteUseres = batchWriteUseres;
 
+const tables = {
+    Users: 'Users',
+    ChangeDetailsConfirmations: 'ChangeDetailsConfirmations',
+    Cookies: 'Cookies',
+    Messages: 'Messages',
+    Tables: 'Tables',
+};
+
 function batchWriteUseres(users){
      const params = {
         RequestItems: {}
      };
 
-     params.RequestItems.Users = users.map(user=>{
+     params.RequestItems.Tables = users.map(user=>{
+        user.TableName = tables.Users;
         return{
             PutRequest: {
                 Item: createDynamoItem(user)
@@ -44,9 +53,10 @@ function batchWriteUseres(users){
 function deleteConfirmDetails(ID) {
     const params = {
         Key: {
-            "ID": { S: ID }
+            ID: { S: ID },
+            TableName : {S: tables.ChangeDetailsConfirmations}
         },
-        TableName: "ChangeDetailsConfirmations"
+        TableName: tables.Tables
     };
     const promise = new Promise((resolve, reject) => {
         dynamodb.deleteItem(params, function (err, data) {
@@ -58,11 +68,12 @@ function deleteConfirmDetails(ID) {
 
 function updateUserEnterTime(ID) {
     const params = {
-        TableName: 'Users',
+        TableName: tables.Tables,
         Key: {
             ID: {
                 S: ID
-            }
+            },
+            TableName: {S:tables.Users}
         },
         UpdateExpression: 'SET #t = :t',
         ExpressionAttributeNames: {
@@ -84,11 +95,10 @@ function updateUserEnterTime(ID) {
 function deleteCookie(cookie) {
     const params = {
         Key: {
-            "Cookie": {
-                S: cookie
-            }
+            ID: { S: cookie },
+            TableName:{S: tables.Cookies}
         },
-        TableName: "Cookies"
+        TableName: tables.Tables
     };
     const promise = new Promise((resolve, reject) => {
         dynamodb.deleteItem(params, function (err, data) {
@@ -101,13 +111,12 @@ function deleteCookie(cookie) {
 function getUserByCookie(cookie) {
     const promise = new Promise((resolve, reject) => {
         getIdByCookie(cookie).then(evt => {
-
             if (evt.err) {
                 resolve({ err: evt.err });
             } else if (!(evt.data && evt.data.Item)) {
                 resolve({ data: { user: null } });
             } else {
-                getUserById(evt.data.Item.ID)
+                getUserById(evt.data.Item.UID)
                     .then(resolve)
                     .catch(reject);
             }
@@ -119,7 +128,8 @@ function getUserByCookie(cookie) {
 
 function addUserConfirmation(ID, firstName, lastName, pseudonym, email, phone, tel) {
     const params = {
-        TableName: 'ChangeDetailsConfirmations', Item: {
+        TableName: tables.Tables, Item: {
+            TableName:{S: tables.ChangeDetailsConfirmations},
             ID: { S: ID },
             firstName: { S: firstName },
             lastName: { S: lastName },
@@ -153,8 +163,9 @@ function updateUserDetails(ID, password, firstName, lastName, pseudonym, email, 
         tl: { name: 'tel', value: tel },
         aw: { name: 'award', value: award }
     };
-
-    const params = createUpdateQuery('Users', { ID: ID.toString() }, fields);
+            
+    const keyObj = {TableName: tables.Users, ID: ID.toString() };
+    const params = createUpdateQuery(tables.Tables, keyObj, fields);
     console.log(params);
     const promise = new Promise((resolve, reject) => {
         if (!params) {
@@ -173,9 +184,10 @@ function getUserById(ID) {
         "Key": {
             "ID": {
                 S: ID
-            }
+            },
+            TableName:{S: tables.Users},
         },
-        TableName: "Users"
+        TableName: tables.Tables
     };
     const promise = new Promise((resolve, reject) => {
         dynamodb.getItem(params, (err, data) => {
@@ -191,11 +203,12 @@ function getUserById(ID) {
 function getIdByCookie(cookie) {
     const params = {
         "Key": {
-            "Cookie": {
+            ID: {
                 S: cookie
-            }
+            },
+            TableName: { S: tables.Cookies }
         },
-        TableName: "Cookies"
+        TableName: tables.Tables
     };
     const promise = new Promise((resolve, reject) => {
         dynamodb.getItem(params, (err, data) => {
@@ -210,9 +223,10 @@ function getIdByCookie(cookie) {
 
 function saveCookie(cookie, ID) {
     const params = {
-        TableName: 'Cookies', Item: {
-            Cookie: { S: cookie },
-            ID: { S: ID },
+        TableName: tables.Tables, Item: {
+            TableName: {S:tables.Cookies},
+            ID: { S: cookie },
+            UID: { S: ID },
             date: { N: Date.now().toString() }
         }
     };
@@ -226,11 +240,12 @@ function saveCookie(cookie, ID) {
 
 function updatePassword(ID, password) {
     const params = {
-        TableName: 'Users',
+        TableName: tables.Tables,
         Key: {
             ID: {
                 S: ID
-            }
+            },
+            TableName: {S:tables.Users},
         },
         UpdateExpression: 'SET #p = :p',
         ExpressionAttributeNames: {
@@ -254,7 +269,7 @@ function updatePassword(ID, password) {
 
 function getUsersReport() {
     const params = {
-        TableName: 'Users',
+        TableName: tables.Tables,
         ProjectionExpression: "#i, #t, #fn, #ln, #ps, #e, #pn, #tl, #aw, #p, #ad",
         ExpressionAttributeNames: {
             "#i": "ID",
@@ -268,11 +283,17 @@ function getUsersReport() {
             "#aw": "award",
             "#p": "password",
             "#ad": "isAdmin"
-        }
+        },
+        ExpressionAttributeValues: {
+        ":v1": {
+            S: tables.Users
+            }
+        }, 
+        KeyConditionExpression: "TableName = :v1", 
     };
 
     const promise = new Promise((resolve, reject) => {
-        dynamodb.scan(params, returnScanResult(resolve));
+        dynamodb.query(params, returnScanResult(resolve));
     });
     return promise;
 }
@@ -280,27 +301,29 @@ function getUsersReport() {
 function replaceMessages(messages) {
     let params = {
         RequestItems: {
-            "Messages": []
+            Tables: []
         }
     };
     const promise = new Promise((resolve, reject) => {
-        scanTable('Messages').then(evt => {
+        scanTable(tables.Messages).then(evt => {
             if (evt.err) {
                 resolve(evt);
             } else {
                 evt.data && evt.data.forEach(msg => {
-                    params.RequestItems.Messages.push({
+                    params.RequestItems.Tables.push({
                         DeleteRequest: {
                             Key: {
+                                TableName: {S:tables.Messages},
                                 ID: { S: msg.ID }
                             }
                         }
                     });
                 });
                 messages.forEach(msg => {
-                    params.RequestItems.Messages.push({
+                    params.RequestItems.Tables.push({
                         PutRequest: {
                             Item: {
+                                TableName: {S:tables.Messages},
                                 ID: { S: guid() },
                                 text: { S: msg }
                             }
@@ -317,8 +340,17 @@ function replaceMessages(messages) {
 }
 
 function scanTable(tableName) {
+    const params = {
+        ExpressionAttributeValues: {
+            ":v1": {
+                S: tableName
+            }
+        }, 
+        KeyConditionExpression: "TableName = :v1", 
+        TableName: "Tables"
+    };
     const promise = new Promise((resolve, reject) => {
-        dynamodb.scan({ TableName: tableName }, returnScanResult(resolve));
+        dynamodb.query(params, returnScanResult(resolve));
     });
     return promise;
 }
@@ -333,6 +365,7 @@ function returnScanResult(resolve) {
 }
 
 function parseDynamoItem(item) {
+    delete item.TableName;
     for (let key in item) {
         item[key] = item[key].S || item[key].N || item;
     }

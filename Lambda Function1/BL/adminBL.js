@@ -1,9 +1,9 @@
 'use strict';
 
 const dal = require('../dal');
-const MAX_USERS_UPDATE_COUNT = 30;
-const USERS_WRITE_CAPACITY = 15;
-const USERS_READ_CAPACITY = 15;
+const MAX_USERS_UPDATE_COUNT = 50;
+const USERS_WRITE_CAPACITY = 25;
+const USERS_READ_CAPACITY = 25;
 exports.updateUsers = updateUsers;
 
 
@@ -44,7 +44,7 @@ function updateUsers(users){
                         .then(resolve)
                         .catch((err)=>resolve({err}));
                 } else {
-                    dal.updateTableCapacity('Users', USERS_READ_CAPACITY, usersToUpdate.length).then(({err,data})=>{
+                    dal.updateTableCapacity('Tables', USERS_READ_CAPACITY, Math.round(usersToUpdate.length / 2)).then(({err,data})=>{
                         if (err) {
                             resolve({err});
                         } else {
@@ -52,7 +52,7 @@ function updateUsers(users){
                                 if (err){
                                     resolve({err});
                                 } else {
-                                    dal.updateTableCapacity('Users', USERS_READ_CAPACITY, USERS_WRITE_CAPACITY).then(({err})=>{
+                                    dal.updateTableCapacity('Tables', USERS_READ_CAPACITY, USERS_WRITE_CAPACITY).then(({err})=>{
                                         err && console.log('dal.updateTableCapacity', err);
                                         resolve(data);
                                     });

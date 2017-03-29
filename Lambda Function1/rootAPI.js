@@ -45,10 +45,16 @@ function isString(obj) {
 
 function rootApi(event, context, callback) {
     let origin = 'https://ssofrim.com';
-    if (event.headers.Origin && event.headers.Origin.startsWith('http://localhost:')){
-        origin = event.headers.Origin;
-    }
     const done = getDoneFunction(callback, origin);
+    
+    if (event.headers.Origin) {
+        if (event.headers.Origin.startsWith('http://localhost:') || event.headers.Origin === origin){
+            origin = event.headers.Origin;
+        } else {
+            done('no-cors',null,401);
+        }
+    }
+
     try {
         console.log(event.path);
         methodByResource[event.path.toLowerCase()](event, context, done);

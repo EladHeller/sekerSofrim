@@ -44,23 +44,24 @@ function isString(obj) {
 }
 
 function rootApi(event, context, callback) {
-    let origin = 'https://ssofrim.com';
-    const done = getDoneFunction(callback, origin);
+    console.log(event);
+    let site = 'https://ssofrim.com';
+    let origin = event.headers.Origin || event.headers.origin;
     
-    if (event.headers.Origin) {
-        if (event.headers.Origin.startsWith('http://localhost:') || event.headers.Origin === origin){
-            origin = event.headers.Origin;
+    if (origin) {
+        if (origin.startsWith('http://localhost:') || (origin === site)){
+            const done = getDoneFunction(callback, origin);
+            
+            try {
+                console.log(event.path);
+                methodByResource[event.path.toLowerCase()](event, context, done);
+            } catch (e) {
+                done(e)
+            }
         } else {
-            done('no-cors',null,401);
+            getDoneFunction(callback, site)('no-cors',null,403);
         }
-    }
-
-    try {
-        console.log(event.path);
-        methodByResource[event.path.toLowerCase()](event, context, done);
-    } catch (e) {
-        done(e)
-    }
+    }   
 }
 
 function getError(err) {

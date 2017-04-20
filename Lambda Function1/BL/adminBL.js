@@ -49,14 +49,10 @@ function updateUsers(users){
                             resolve({err});
                         } else {
                             updateUsersDetails(usersToUpdate).then(({err,data})=>{
-                                if (err){
-                                    resolve({err});
-                                } else {
-                                    dal.updateTableCapacity('Tables', USERS_READ_CAPACITY, USERS_WRITE_CAPACITY).then(({err})=>{
-                                        err && console.log('dal.updateTableCapacity', err);
-                                        resolve(data);
-                                    });
-                                }
+                                dal.updateTableCapacity('Tables', USERS_READ_CAPACITY, USERS_WRITE_CAPACITY).then((res)=>{
+                                    res.err && console.log('dal.updateTableCapacity', res.err);
+                                    resolve({err,data});
+                                });
                             });
                         }
                     })
@@ -73,7 +69,7 @@ function updateUsersDetails(usersToUpdate){
     const errors = [];
     let index = 0;
     const promise = new Promise((resolve,reject)=>{
-        dal.batchWriteUseres(usersToUpdate)
+        dal.batchWriteUsers(usersToUpdate)
             .then(resolve)
             .catch((err)=>resolve({err}));
     });

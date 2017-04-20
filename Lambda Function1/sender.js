@@ -44,6 +44,7 @@ function sendSMS(msg, phone) {
         if (phone.startsWith('0')){
             phone = '+972' + phone.substr(1);
         }
+        phone = phone.replace('-', '').replace(' ','');
         const smsParams = {
             Message: msg,
             PhoneNumber: phone

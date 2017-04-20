@@ -18,7 +18,7 @@ exports.getUsersReport = getUsersReport;
 exports.deleteConfirmDetails = deleteConfirmDetails;
 exports.replaceMessages = replaceMessages;
 exports.updateTableCapacity = updateTableCapacity;
-exports.batchWriteUseres = batchWriteUseres;
+exports.batchWriteUsers = batchWriteUsers;
 
 const tables = {
     Users: 'Users',
@@ -28,26 +28,43 @@ const tables = {
     Tables: 'Tables',
 };
 
-function batchWriteUseres(users){
+function batchWriteUsers(users){
      const params = {
         RequestItems: {}
      };
 
-     params.RequestItems.Tables = users.map(user=>{
+     let requests = users.map(user=>{
         user.TableName = tables.Users;
-        return{
+        return {
             PutRequest: {
                 Item: createDynamoItem(user)
             }
         };
      });
-
-     const promise = new Promise((resolve,reject)=>{
-        dynamodb.batchWriteItem(params,(err,data)=>{
-            resolve({err,data});
-        })
-     });
-     return promise;
+     let promises = [];
+     let currRequest;
+     try {
+         while (requests.length) {
+             params.RequestItems.Tables = requests.splice(0, 25);
+             promises.push(new Promise((resolve, reject) => {
+                 dynamodb.batchWriteItem(params, (err, data) => {
+                     resolve({ err, data });
+                 })
+             }));
+         }
+         const promise = new Promise((resolve, reject) => {
+             Promise.all(promises).then((values) => {
+                 let err = values.filter(val => val.err);
+                 let data = values.filter(val => val.data);
+                 resolve({ err: err.length? err : undefined, data });
+             }).catch(err => {
+                 resolve({ err });
+             });
+         });
+         return promise;
+     } catch (err) {
+         Promise.resolve({ err });
+     }
 }
 
 function deleteConfirmDetails(ID) {

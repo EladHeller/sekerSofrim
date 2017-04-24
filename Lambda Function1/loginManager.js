@@ -24,7 +24,7 @@ function createUserPassword(ID, mailAddress, phone) {
 
     const promise = new Promise((resolve, reject) => {
         dal.updatePassword(ID,password).then(evt=>{
-            const msg = `סיסמתך החדשה לאתר סקר סופרים היא ${password}.`;
+            const msg = `סיסמתך החדשה לאתר סקר סופרים היא ${password}`;
             if (evt.err) {
                 resolve({ err : evt.err});
             } else if (mailAddress) {

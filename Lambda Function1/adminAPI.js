@@ -38,6 +38,11 @@ const replaceMessages = (event, context, callback) => {
 
 const uploadUsers = (event, context, callback) => {
     let users = event.users;
+    users.forEach(user=>{
+        if (user.award) {
+            user.award = Number(user.award).toFixed(2);
+        }
+    });
     adminBL.updateUsers(users).then(evt=>{
         callback(evt.err, {message: 'success'});
     })

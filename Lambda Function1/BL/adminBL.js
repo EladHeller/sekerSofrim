@@ -39,24 +39,25 @@ function updateUsers(users){
                 console.log('user to update', usersToUpdate);
                 if (!usersToUpdate.length) {
                     resolve({ data: {message: 'Success'} });
-                } else if (usersToUpdate.length <= MAX_USERS_UPDATE_COUNT) {
+                } else {//(usersToUpdate.length <= MAX_USERS_UPDATE_COUNT) {
                     updateUsersDetails(usersToUpdate)
                         .then(resolve)
                         .catch((err)=>resolve({err}));
-                } else {
-                    dal.updateTableCapacity('Tables', USERS_READ_CAPACITY, Math.round(usersToUpdate.length / 2)).then(({err,data})=>{
-                        if (err) {
-                            resolve({err});
-                        } else {
-                            updateUsersDetails(usersToUpdate).then(({err,data})=>{
-                                dal.updateTableCapacity('Tables', USERS_READ_CAPACITY, USERS_WRITE_CAPACITY).then((res)=>{
-                                    res.err && console.log('dal.updateTableCapacity', res.err);
-                                    resolve({err,data});
-                                });
-                            });
-                        }
-                    })
                 }
+                // } else {
+                //     dal.updateTableCapacity('Tables', USERS_READ_CAPACITY, Math.round(usersToUpdate.length / 2)).then(({err,data})=>{
+                //         if (err) {
+                //             resolve({err});
+                //         } else {
+                //             updateUsersDetails(usersToUpdate).then(({err,data})=>{
+                //                 dal.updateTableCapacity('Tables', USERS_READ_CAPACITY, USERS_WRITE_CAPACITY).then((res)=>{
+                //                     res.err && console.log('dal.updateTableCapacity', res.err);
+                //                     resolve({err,data});
+                //                 });
+                //             });
+                //         }
+                //     })
+                // }
             }
         })
         .catch((err)=>resolve({err}));

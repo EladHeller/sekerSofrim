@@ -108,13 +108,14 @@ function getDoneFunction(callback, origin) {
                     dal.saveErrorLog(params.body).then(() => {
                         callback(null, params);
                     });
-                } catch (e) {}
-            }
+                } catch (e) { }
+            } else {
 
-            if (cookieString) {
-                params.headers['Set-Cookie'] = cookieString;
+                if (cookieString) {
+                    params.headers['Set-Cookie'] = cookieString;
+                }
+                callback(null, params);
             }
-            callback(null, params);
 
         } catch (e) {
             callback(e);

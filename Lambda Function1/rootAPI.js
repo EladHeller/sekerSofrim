@@ -51,7 +51,7 @@ function rootApi(event, context, callback) {
     let origin = event.headers.Origin || event.headers.origin;
     
     if (origin) {
-        if (origin.startsWith('http://localhost:') || (origin === site)){
+        if (origin.startsWith('http://localhost:') || (origin.startsWith(site))){
             const done = getDoneFunction(callback, origin);
             
             try {

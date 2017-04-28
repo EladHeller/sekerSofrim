@@ -19,6 +19,7 @@ exports.deleteConfirmDetails = deleteConfirmDetails;
 exports.replaceMessages = replaceMessages;
 exports.updateTableCapacity = updateTableCapacity;
 exports.batchWriteUsers = batchWriteUsers;
+exports.saveErrorLog = saveErrorLog;
 
 const tables = {
     Users: 'Users',
@@ -26,6 +27,7 @@ const tables = {
     Cookies: 'Cookies',
     Messages: 'Messages',
     Tables: 'Tables',
+    Errors: 'Errors'
 };
 
 function batchWriteUsers(users){
@@ -150,12 +152,14 @@ function addUserConfirmation(ID, firstName, lastName, pseudonym, email, phone, t
             ID: { S: ID },
             firstName: { S: firstName },
             lastName: { S: lastName },
-            email: { S: email },
-            phone: { S: phone }
+            email: { S: email }
         }
     };
     if (tel) {
         params.Item.tel = { S: tel };
+    }
+    if (phone) {
+        params.Item.phone = { S: phone };
     }
     if (pseudonym) {
         params.Item.pseudonym = { S: pseudonym };
@@ -245,6 +249,23 @@ function saveCookie(cookie, ID) {
             ID: { S: cookie },
             UID: { S: ID },
             date: { N: Date.now().toString() }
+        }
+    };
+    const promise = new Promise((resolve, success) => {
+        dynamodb.putItem(params, (err, data) => {
+            resolve({ err, data });
+        });
+    });
+    return promise;
+}
+
+function saveErrorLog(err) {
+    const params = {
+        TableName: tables.Tables, Item: {
+            TableName: { S: tables.Errors },
+            ID: { S: guid() },
+            err: { S: err },
+            date: { S: new Date().toLocaleString() }
         }
     };
     const promise = new Promise((resolve, success) => {

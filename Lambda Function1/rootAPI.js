@@ -5,6 +5,7 @@ const adminApi = require('./adminAPI');
 const userDetailsApi = require('./userDetailsApi');
 const usersAPI = require('./usersAPI');
 const messagesApi = require('./messagesApi');
+const systemApi = require('./systemAPI');
 
 exports.rootApi = rootApi;
 
@@ -21,7 +22,8 @@ const methodByResource = {
     '/uploadusers': authorizeAdmin(adminApi.uploadUsers, 'POST'),
     '/requestupdateuserdetails': api(usersAPI.requestUpdateUserDetails, 'POST'),
     '/confirmuserdetails': authorizeAdmin(adminApi.confirmUserDetails, 'POST'),
-    '/replacemessages': authorizeAdmin(adminApi.replaceMessages, 'POST')
+    '/replacemessages': authorizeAdmin(adminApi.replaceMessages, 'POST'),
+    '/error': api(systemApi.saveErrorLog, 'POST')
 };
 
 function api(originalFunction, httpMethod) {
@@ -101,6 +103,14 @@ function getDoneFunction(callback, origin) {
                     'Access-Control-Allow-Credentials': true
                 }
             };
+            if (err) {
+                try {
+                    dal.saveErrorLog(params.body).then(() => {
+                        callback(null, params);
+                    });
+                } catch (e) {}
+            }
+
             if (cookieString) {
                 params.headers['Set-Cookie'] = cookieString;
             }

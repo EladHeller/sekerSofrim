@@ -42,6 +42,9 @@
     <Compile Include="messagesApi.js" />
     <Compile Include="rootAPI.js" />
     <Compile Include="sender.js" />
+    <Compile Include="systemAPI.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="userDetailsApi.js" />
     <Compile Include="usersAPI.js" />
     <Compile Include="utils.js" />

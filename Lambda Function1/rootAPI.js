@@ -92,7 +92,7 @@ function getRes(res) {
 
 function getDoneFunction(callback, origin) {
     return (err, res, statusCode, cookieString, contentType) => {
-        console.log('getDoneFunction', err, res);
+        console.log('getDoneFunction', err, res, cookieString? : `Cookie ${cookieString}`:'');
         try {
             let params = {
                 statusCode: statusCode || (err ? '500' : '200'),
@@ -146,7 +146,7 @@ function authorize(originalFunction, httpMethod, admin) {
                     originalFunction(event, context, callback);
                 }
             })
-                .catch(callback);
+            .catch(callback);
         }
     };
 }

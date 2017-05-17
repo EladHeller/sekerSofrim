@@ -61,7 +61,7 @@ function rootApi(event, context, callback) {
                 done(e)
             }
         } else {
-            getDoneFunction(callback, site)('no-cors',origin,403);
+            getDoneFunction(callback, origin)('no-cors',null,403);
         }
     }   
 }
@@ -92,7 +92,7 @@ function getRes(res) {
 
 function getDoneFunction(callback, origin) {
     return (err, res, statusCode, cookieString, contentType) => {
-        console.log('getDoneFunction', err, res, cookieString? : `Cookie ${cookieString}`:'');
+        console.log('getDoneFunction', err, res, cookieString? `Cookie ${cookieString}`:'');
         try {
             let params = {
                 statusCode: statusCode || (err ? '500' : '200'),

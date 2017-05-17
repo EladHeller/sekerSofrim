@@ -42,7 +42,5 @@ function createUserPassword(ID, mailAddress, phone) {
 }
 
 function generatePassword() {
-    return String.fromCharCode(65 + Math.floor(Math.random() * 26)) +
-        String.fromCharCode(97 + Math.floor(Math.random() * 26)) +
-        Math.random().toString().substring(2, 7);
+    return Math.random().toString().substring(2, 9);
 }

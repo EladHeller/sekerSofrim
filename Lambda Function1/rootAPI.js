@@ -61,7 +61,7 @@ function rootApi(event, context, callback) {
                 done(e)
             }
         } else {
-            getDoneFunction(callback, site)('no-cors',null,403);
+            getDoneFunction(callback, site)('no-cors',origin,403);
         }
     }   
 }

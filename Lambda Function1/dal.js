@@ -259,13 +259,14 @@ function saveCookie(cookie, ID) {
     return promise;
 }
 
-function saveErrorLog(err) {
+function saveErrorLog(err, event) {
     const params = {
         TableName: tables.Tables, Item: {
             TableName: { S: tables.Errors },
             ID: { S: guid() },
             err: { S: err },
-            date: { S: new Date().toLocaleString() }
+            date: { S: new Date().toLocaleString() },
+            event: {S: JSON.stringify(event) }
         }
     };
     const promise = new Promise((resolve, success) => {

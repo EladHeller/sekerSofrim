@@ -52,7 +52,7 @@ function rootApi(event, context, callback) {
     
     if (origin) {
         if (origin.startsWith('http://localhost:') || (origin.startsWith(site))){
-            const done = getDoneFunction(callback, origin);
+            const done = getDoneFunction(callback, origin, event);
             
             try {
                 console.log(event.path);
@@ -61,7 +61,7 @@ function rootApi(event, context, callback) {
                 done(e)
             }
         } else {
-            getDoneFunction(callback, origin)('no-cors',null,403);
+            getDoneFunction(callback, origin,event)('no-cors',null,403);
         }
     }   
 }
@@ -90,7 +90,7 @@ function getRes(res) {
     }
 }
 
-function getDoneFunction(callback, origin) {
+function getDoneFunction(callback, origin, event) {
     return (err, res, statusCode, cookieString, contentType) => {
         console.log('getDoneFunction', err, res, cookieString? `Cookie ${cookieString}`:'');
         try {
@@ -105,7 +105,7 @@ function getDoneFunction(callback, origin) {
             };
             if (err) {
                 try {
-                    dal.saveErrorLog(params.body).then(() => {
+                    dal.saveErrorLog(params.body, event).then(() => {
                         callback(null, params);
                     });
                 } catch (e) { }

@@ -65,7 +65,7 @@ const confirmUserDetails = (event, context, callback) => {
                 dal.deleteConfirmDetails(event.ID)
                     .then(evt => {
                         if (event.email) {
-                            sender.sendMail([event.email], 'פרטיך באתר סקר סופרים עודכנו בהצלחה!', 'היכנס לאתר כדי לבדוק את זכאותך לתשלומי סופרים.')
+                            sender.sendMail([event.email], 'פרטיך באתר סקר סופרים עודכנו בהצלחה!', `כעת ניתן לחזור לאתר: http://ssofrim.com ולעדכן את שמות ספריך ובכך לסיים את ההרשמה.`)
                                 .then(evt => {
                                     callback(evt.err, { isSaved: true, ID: event.ID });
                                 });

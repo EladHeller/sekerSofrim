@@ -11,7 +11,7 @@ function sendMail(to, subject, text) {
     var params = {
         Destination: {
             BccAddresses: [
-                'eladheller@gmail.com'
+                'ssofrim@gmail.com'
             ],
             ToAddresses: to
         },

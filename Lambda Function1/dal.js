@@ -1,25 +1,10 @@
 ﻿'use strict';
 
 const AWS = require('aws-sdk');
+const createGuid = require('./helpers/guid.service');
 AWS.config.region = 'us-west-2';
 
 const dynamodb = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
-exports.getUserById = getUserById;
-exports.getIdByCookie = getIdByCookie;
-exports.saveCookie = saveCookie;
-exports.addUserConfirmation = addUserConfirmation;
-exports.updatePassword = updatePassword;
-exports.updateUserDetails = updateUserDetails;
-exports.deleteCookie = deleteCookie;
-exports.getUserByCookie = getUserByCookie;
-exports.scanTable = scanTable;
-exports.updateUserEnterTime = updateUserEnterTime;
-exports.getUsersReport = getUsersReport;
-exports.deleteConfirmDetails = deleteConfirmDetails;
-exports.replaceMessages = replaceMessages;
-exports.updateTableCapacity = updateTableCapacity;
-exports.batchWriteUsers = batchWriteUsers;
-exports.saveErrorLog = saveErrorLog;
 
 const tables = {
     Users: 'Users',
@@ -263,7 +248,7 @@ function saveErrorLog(err, event) {
     const params = {
         TableName: tables.Tables, Item: {
             TableName: { S: tables.Errors },
-            ID: { S: guid() },
+            ID: { S: createGuid() },
             err: { S: err },
             date: { S: new Date().toLocaleString() },
             event: {S: JSON.stringify(event) }
@@ -363,7 +348,7 @@ function replaceMessages(messages) {
                         PutRequest: {
                             Item: {
                                 TableName: {S:tables.Messages},
-                                ID: { S: guid() },
+                                ID: { S: createGuid() },
                                 text: { S: msg }
                             }
                         }
@@ -490,12 +475,21 @@ function createDynamoItem(item){
     return newItem;
 }
 
-function guid() {
-    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-        s4() + '-' + s4() + s4() + s4();
-}
-function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-        .toString(16)
-        .substring(1);
-}
+module.exports = {
+    getUserById,
+    getIdByCookie,
+    saveCookie,
+    addUserConfirmation,
+    updatePassword,
+    updateUserDetails,
+    deleteCookie,
+    getUserByCookie,
+    scanTable,
+    updateUserEnterTime,
+    getUsersReport,
+    deleteConfirmDetails,
+    replaceMessages,
+    updateTableCapacity,
+    batchWriteUsers,
+    saveErrorLog
+};

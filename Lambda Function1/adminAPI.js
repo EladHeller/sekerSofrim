@@ -1,7 +1,6 @@
 'use strict';
 
 const dal = require('./dal');
-const utils = require('./utils');
 const sender = require('./sender');
 const adminBL = require('./BL/adminBL');
 

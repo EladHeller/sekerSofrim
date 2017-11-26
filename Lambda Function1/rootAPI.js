@@ -48,10 +48,11 @@ function isString(obj) {
 function rootApi(event, context, callback) {
     console.log(event);
     let site = 'https://ssofrim.com';
+    let wSite = 'https://www.ssofrim.com';
     let origin = event.headers.Origin || event.headers.origin;
     
     if (origin) {
-        if (origin.startsWith('http://localhost:') || (origin.startsWith(site))){
+        if (origin.startsWith('http://localhost:') || origin.startsWith(site) || origin.startsWith(wSite)){
             const done = getDoneFunction(callback, origin, event);
             
             try {

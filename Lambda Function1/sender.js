@@ -11,7 +11,7 @@ function sendMail(to, subject, text) {
     var params = {
         Destination: {
             BccAddresses: [
-                'ssofrim@gmail.com'
+                'ssofrim@ms-ci.co.il‏'
             ],
             ToAddresses: to
         },
@@ -27,7 +27,7 @@ function sendMail(to, subject, text) {
                 Charset: 'UTF-8'
             }
         },
-        Source: 'Seker Sofrim <ssofrim@gmail.com>'
+        Source: 'Seker Sofrim <ssofrim@ms-ci.co.il‏>'
     };
     const promise = new Promise((resolve, reject) => {
         ses.sendEmail(params, (err, data) => {

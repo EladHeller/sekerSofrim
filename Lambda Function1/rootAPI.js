@@ -7,8 +7,6 @@ const usersAPI = require('./usersAPI');
 const messagesApi = require('./messagesApi');
 const systemApi = require('./systemAPI');
 
-exports.rootApi = rootApi;
-
 const methodByResource = {
     '/idlogin': api(usersAPI.searchUserById, 'POST'),
     '/getconnecteduser': api(usersAPI.getConnectedUser, 'POST'),
@@ -154,4 +152,8 @@ function authorize(originalFunction, httpMethod, admin) {
 
 function authorizeAdmin(originalFunction, httpMethod) {
     return authorize(originalFunction, httpMethod, true);
+}
+
+module.exports = {
+    rootApi,
 }

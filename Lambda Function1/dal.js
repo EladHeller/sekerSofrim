@@ -4,22 +4,6 @@ const AWS = require('aws-sdk');
 AWS.config.region = 'us-west-2';
 
 const dynamodb = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
-exports.getUserById = getUserById;
-exports.getIdByCookie = getIdByCookie;
-exports.saveCookie = saveCookie;
-exports.addUserConfirmation = addUserConfirmation;
-exports.updatePassword = updatePassword;
-exports.updateUserDetails = updateUserDetails;
-exports.deleteCookie = deleteCookie;
-exports.getUserByCookie = getUserByCookie;
-exports.scanTable = scanTable;
-exports.updateUserEnterTime = updateUserEnterTime;
-exports.getUsersReport = getUsersReport;
-exports.deleteConfirmDetails = deleteConfirmDetails;
-exports.replaceMessages = replaceMessages;
-exports.updateTableCapacity = updateTableCapacity;
-exports.batchWriteUsers = batchWriteUsers;
-exports.saveErrorLog = saveErrorLog;
 
 const tables = {
     Users: 'Users',
@@ -127,22 +111,15 @@ function deleteCookie(cookie) {
     return promise;
 }
 
-function getUserByCookie(cookie) {
-    const promise = new Promise((resolve, reject) => {
-        getIdByCookie(cookie).then(evt => {
-            if (evt.err) {
-                resolve({ err: evt.err });
-            } else if (!(evt.data && evt.data.Item)) {
-                resolve({ data: { user: null } });
-            } else {
-                getUserById(evt.data.Item.UID)
-                    .then(resolve)
-                    .catch(reject);
-            }
-        })
-            .catch(reject);
-    });
-    return promise;
+const getUserByCookie = async (cookie) => {
+    const {err, data} = await getIdByCookie(cookie)
+    if (err) {
+        return {err};
+    }
+    if (!data || !data.Item) {
+        return {data: {user: null}};
+    }
+    return getUserById(data.Item.UID)
 }
 
 function addUserConfirmation(ID, firstName, lastName, pseudonym, email, phone, tel) {
@@ -165,12 +142,11 @@ function addUserConfirmation(ID, firstName, lastName, pseudonym, email, phone, t
         params.Item.pseudonym = { S: pseudonym };
     }
 
-    const promise = new Promise((resolve, success) => {
+    return new Promise((resolve) => {
         dynamodb.putItem(params, (err, data) => {
             resolve({ err, data });
         });
     });
-    return promise;
 }
 
 function updateUserDetails(ID, password, firstName, lastName, pseudonym, email, phone, tel, award) {
@@ -222,16 +198,8 @@ function getUserById(ID) {
 }
 
 function getIdByCookie(cookie) {
-    const params = {
-        "Key": {
-            ID: {
-                S: cookie
-            },
-            TableName: { S: tables.Cookies }
-        },
-        TableName: tables.Tables
-    };
-    const promise = new Promise((resolve, reject) => {
+    const params = {Key: {ID: {S: cookie}, TableName: { S: tables.Cookies }}, TableName: tables.Tables}
+    return new Promise((resolve, reject) => {
         dynamodb.getItem(params, (err, data) => {
             if (data.Item) {
                 parseDynamoItem(data.Item);
@@ -239,7 +207,6 @@ function getIdByCookie(cookie) {
             resolve({ err, data });
         });
     });
-    return promise;
 }
 
 function saveCookie(cookie, ID) {
@@ -251,12 +218,11 @@ function saveCookie(cookie, ID) {
             date: { N: Date.now().toString() }
         }
     };
-    const promise = new Promise((resolve, success) => {
+    return new Promise((resolve, success) => {
         dynamodb.putItem(params, (err, data) => {
             resolve({ err, data });
         });
     });
-    return promise;
 }
 
 function saveErrorLog(err, event) {
@@ -269,12 +235,11 @@ function saveErrorLog(err, event) {
             event: {S: JSON.stringify(event) }
         }
     };
-    const promise = new Promise((resolve, success) => {
+    return new Promise((resolve, success) => {
         dynamodb.putItem(params, (err, data) => {
             resolve({ err, data });
         });
     });
-    return promise;
 }
 
 function updatePassword(ID, password) {
@@ -297,13 +262,11 @@ function updatePassword(ID, password) {
         }
     };
 
-    const promise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         dynamodb.updateItem(params, (err, data) => {
             resolve({ err, data });
         });
     });
-
-    return promise;
 }
 
 function getUsersReport() {
@@ -331,10 +294,9 @@ function getUsersReport() {
         KeyConditionExpression: "TableName = :v1", 
     };
 
-    const promise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         dynamodb.query(params, returnScanResult(resolve));
     });
-    return promise;
 }
 
 function replaceMessages(messages) {
@@ -343,7 +305,7 @@ function replaceMessages(messages) {
             Tables: []
         }
     };
-    const promise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         scanTable(tables.Messages).then(evt => {
             if (evt.err) {
                 resolve(evt);
@@ -375,7 +337,6 @@ function replaceMessages(messages) {
             }
         });
     });
-    return promise;
 }
 
 function scanTable(tableName) {
@@ -388,10 +349,9 @@ function scanTable(tableName) {
         KeyConditionExpression: "TableName = :v1", 
         TableName: "Tables"
     };
-    const promise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         dynamodb.query(params, returnScanResult(resolve));
     });
-    return promise;
 }
 
 function returnScanResult(resolve) {
@@ -472,16 +432,15 @@ function updateTableCapacity(table, read, write){
         }, 
         TableName: table
     };
-    const promise = new Promise((resolve,reject)=>{
+    return new Promise((resolve,reject)=>{
         dynamodb.updateTable(params, function(err, data) {
             resolve({err,data});
         });
     });
-    return promise;
 }
 
 function createDynamoItem(item){
-    const newItem ={};
+    const newItem = {};
     for (let key in item){
         if ((item[key] !== '') && (item[key] !== null) && (item[key] !== undefined)){
             newItem[key] = {S:item[key]};
@@ -498,4 +457,23 @@ function s4() {
     return Math.floor((1 + Math.random()) * 0x10000)
         .toString(16)
         .substring(1);
+}
+
+module.exports = {
+    getUserById,
+    getIdByCookie,
+    saveCookie,
+    addUserConfirmation,
+    updatePassword,
+    updateUserDetails,
+    deleteCookie,
+    getUserByCookie,
+    scanTable,
+    updateUserEnterTime,
+    getUsersReport,
+    deleteConfirmDetails,
+    replaceMessages,
+    updateTableCapacity,
+    batchWriteUsers,
+    saveErrorLog,
 }

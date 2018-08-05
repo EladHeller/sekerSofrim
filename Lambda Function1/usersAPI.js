@@ -121,7 +121,7 @@ const getConnectedUser = (event, context, callback) => {
         })
         .catch(callback);
     } else {
-        callback(null,{user:null});
+        callback(null, {user:null});
     }
 };
 
@@ -139,9 +139,11 @@ const requestUpdateUserDetails  = (event, context, callback) => {
         .catch(callback);
 };
 
-exports.logOut = logOut;
-exports.resetPassword = resetPassword;
-exports.searchUserById = searchUserById;
-exports.passwordLogin = passwordLogin;
-exports.getConnectedUser = getConnectedUser;
-exports.requestUpdateUserDetails = requestUpdateUserDetails;
+module.exports = {
+    logOut,
+    resetPassword,
+    searchUserById,
+    passwordLogin,
+    getConnectedUser,
+    requestUpdateUserDetails,
+}

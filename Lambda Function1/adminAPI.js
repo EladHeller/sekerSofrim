@@ -6,34 +6,30 @@ const sender = require('./sender');
 const adminBL = require('./BL/adminBL');
 
 const getUserDetailsConfirms = (event, context, callback) => {
-    dal.scanTable('ChangeDetailsConfirmations').then(evt => {
-        callback(evt.err, evt.data);
+    dal.scanTable('ChangeDetailsConfirmations').then(data => {
+        callback(null, data);
     })
-        .catch(callback);
+    .catch(err => callback({err}));
 };
 
 const getUsersReport = (event, context, callback) => {
-    dal.getUsersReport().then(evt => {
-        if (evt.err) {
-            callback(evt.err);
-        } else {
-            const fields = ['ID', 'firstName', 'lastName', 'pseudonym','email', 'phone', 'tel', 'award', 'enterTime','password','isAdmin'];
-            let data = [];
-            data.push(fields);
-            evt.data.forEach(user => {
-                data.push(fields.map(field => user[field] ? user[field].toString() : ''));
-            });
-            callback(null, data);
-        }
+    dal.getUsersReport().then(users => {
+        const fields = ['ID', 'firstName', 'lastName', 'pseudonym','email', 'phone', 'tel', 'award', 'enterTime','password','isAdmin'];
+        let data = [];
+        data.push(fields);
+        users.forEach(user => {
+            data.push(fields.map(field => user[field] ? user[field].toString() : ''));
+        });
+        callback(null, data);
     })
-        .catch(callback);
+    .catch(err => callback({err}));
 };
 
 const replaceMessages = (event, context, callback) => {
-    dal.replaceMessages(event.messages).then(evt => {
-        callback(evt.err, evt.data && { message: 'success' });
+    dal.replaceMessages(event.messages).then(() => {
+        callback(null, { message: 'success' });
     })
-    .catch(callback);
+    .catch(err => callback({err}));
 };
 
 const uploadUsers = (event, context, callback) => {
@@ -43,10 +39,10 @@ const uploadUsers = (event, context, callback) => {
             user.award = Number(user.award).toFixed(2);
         }
     });
-    adminBL.updateUsers(users).then(evt=>{
-        callback(evt.err, {message: 'success'});
+    adminBL.updateUsers(users).then(data=> {
+        callback(null, {message: 'success'});
     })
-    .catch(callback);
+    .catch(err => callback({err}));
 };
 
 const confirmUserDetails = (event, context, callback) => {
@@ -81,8 +77,10 @@ const confirmUserDetails = (event, context, callback) => {
         })
         .catch(callback);
 };
-exports.replaceMessages = replaceMessages;
-exports.uploadUsers = uploadUsers;
-exports.getUsersReport = getUsersReport;
-exports.getUserDetailsConfirms = getUserDetailsConfirms;
-exports.confirmUserDetails = confirmUserDetails;
+module.exports = {
+    replaceMessages,
+    uploadUsers,
+    getUsersReport,
+    getUserDetailsConfirms,
+    confirmUserDetails,
+}

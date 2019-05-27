@@ -1,0 +1,26 @@
+{
+  "name": "sekersofrim",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EladHeller/sekerSofrim.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EladHeller/sekerSofrim/issues"
+  },
+  "homepage": "https://github.com/EladHeller/sekerSofrim#readme",
+  "dependencies": {
+    "aws-sdk": "^2.463.0",
+    "bcrypt": "^3.0.6",
+    "cookie-parser": "^1.4.4",
+    "express": "^4.17.1",
+    "phin": "^3.3.0"
+  }
+}

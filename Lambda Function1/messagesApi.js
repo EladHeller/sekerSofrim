@@ -3,10 +3,10 @@
 const dal = require('./dal');
 
 const getMessages = (event, context, callback) => {
-    dal.scanTable("Messages").then(evt => {
-        callback(evt.err, evt.data);
+    dal.scanTable("Messages").then(data => {
+        callback(null, data);
     })
-    .catch(callback);
+    .catch(err => callback({err}));
 };
 
 exports.getMessages = getMessages;

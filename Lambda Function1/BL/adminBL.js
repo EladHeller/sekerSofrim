@@ -1,11 +1,4 @@
-'use strict';
-
 const dal = require('../dal');
-const MAX_USERS_UPDATE_COUNT = 50;
-const USERS_WRITE_CAPACITY = 25;
-const USERS_READ_CAPACITY = 25;
-exports.updateUsers = updateUsers;
-
 
 function isUserToUpdate(usr, existUsers){
     let isToUpdate = false;
@@ -27,54 +20,17 @@ function isUserToUpdate(usr, existUsers){
     return isToUpdate;
 }
 
-function updateUsers(users){
-    const promise = new Promise((resolve,reject)=>{
-        dal.scanTable('Users').then(evt=>{
-            if (evt.err){
-                resolve({err:evt.err});
-            } else {
-                users.forEach(prepareUserToUpdate);
-                const usersToUpdate = users.filter(usr=> isUserToUpdate(usr, evt.data));
+async function updateUsers(users){
+    const data = await dal.scanTable('Users')
+    users.forEach(prepareUserToUpdate);
+    const usersToUpdate = users.filter(usr=> isUserToUpdate(usr, data));
 
-                console.log('user to update', usersToUpdate);
-                if (!usersToUpdate.length) {
-                    resolve({ data: {message: 'Success'} });
-                } else {//(usersToUpdate.length <= MAX_USERS_UPDATE_COUNT) {
-                    updateUsersDetails(usersToUpdate)
-                        .then(resolve)
-                        .catch((err)=>resolve({err}));
-                }
-                // } else {
-                //     dal.updateTableCapacity('Tables', USERS_READ_CAPACITY, Math.round(usersToUpdate.length / 2)).then(({err,data})=>{
-                //         if (err) {
-                //             resolve({err});
-                //         } else {
-                //             updateUsersDetails(usersToUpdate).then(({err,data})=>{
-                //                 dal.updateTableCapacity('Tables', USERS_READ_CAPACITY, USERS_WRITE_CAPACITY).then((res)=>{
-                //                     res.err && console.log('dal.updateTableCapacity', res.err);
-                //                     resolve({err,data});
-                //                 });
-                //             });
-                //         }
-                //     })
-                // }
-            }
-        })
-        .catch((err)=>resolve({err}));
-    });
-
-    return promise;
-}
-
-function updateUsersDetails(usersToUpdate){
-    const errors = [];
-    let index = 0;
-    const promise = new Promise((resolve,reject)=>{
-        dal.batchWriteUsers(usersToUpdate)
-            .then(resolve)
-            .catch((err)=>resolve({err}));
-    });
-    return promise;
+    console.log('user to update', usersToUpdate);
+    if (!usersToUpdate.length) {
+       return {message: 'Success'};
+    } else {
+        return dal.batchWriteUsers(usersToUpdate);
+    }
 }
 
 function prepareUserToUpdate(user) {
@@ -92,3 +48,7 @@ function prepareUserToUpdate(user) {
         user.tel = '0' + user.tel;
     }
 }
+
+module.exports = {
+    updateUsers,
+};

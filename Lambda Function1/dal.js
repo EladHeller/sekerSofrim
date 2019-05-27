@@ -1,6 +1,4 @@
-﻿'use strict';
-
-const AWS = require('aws-sdk');
+﻿const AWS = require('aws-sdk');
 AWS.config.region = 'us-west-2';
 
 const dynamodb = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
@@ -14,43 +12,36 @@ const tables = {
     Errors: 'Errors'
 };
 
-function batchWriteUsers(users){
-     const params = {
+async function batchWriteUsers(users){
+    const params = {
         RequestItems: {}
-     };
+    };
 
-     let requests = users.map(user=>{
+    let requests = users.map(user=>{
         user.TableName = tables.Users;
         return {
             PutRequest: {
                 Item: createDynamoItem(user)
             }
         };
-     });
-     let promises = [];
-     let currRequest;
-     try {
-         while (requests.length) {
-             params.RequestItems.Tables = requests.splice(0, 25);
-             promises.push(new Promise((resolve, reject) => {
-                 dynamodb.batchWriteItem(params, (err, data) => {
-                     resolve({ err, data });
-                 })
-             }));
-         }
-         const promise = new Promise((resolve, reject) => {
-             Promise.all(promises).then((values) => {
-                 let err = values.filter(val => val.err);
-                 let data = values.filter(val => val.data);
-                 resolve({ err: err.length? err : undefined, data });
-             }).catch(err => {
-                 resolve({ err });
-             });
-         });
-         return promise;
-     } catch (err) {
-         Promise.resolve({ err });
-     }
+    });
+
+    let promises = [];
+    while (requests.length) {
+        params.RequestItems.Tables = requests.splice(0, 25);
+        promises.push(new Promise((resolve, reject) => {
+            dynamodb.batchWriteItem(params, (err, data) => {
+                resolve({ err, data });
+            })
+        }));
+    }
+    const values = await Promise.all(promises)
+    let err = values.filter(val => val.err);
+    let data = values.filter(val => val.data);
+    if (err.length) {
+        throw err;
+    }
+    return data;
 }
 
 function deleteConfirmDetails(ID) {
@@ -163,8 +154,7 @@ function updateUserDetails(ID, password, firstName, lastName, pseudonym, email, 
             
     const keyObj = {TableName: tables.Users, ID: ID.toString() };
     const params = createUpdateQuery(tables.Tables, keyObj, fields);
-    console.log(params);
-    const promise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         if (!params) {
             resolve({});
         } else {
@@ -173,7 +163,6 @@ function updateUserDetails(ID, password, firstName, lastName, pseudonym, email, 
             });
         }
     });
-    return promise;
 }
 
 function getUserById(ID) {
@@ -294,49 +283,38 @@ function getUsersReport() {
         KeyConditionExpression: "TableName = :v1", 
     };
 
-    return new Promise((resolve, reject) => {
-        dynamodb.query(params, returnScanResult(resolve));
-    });
+    return dynamodb.query(params).promise().then(returnScanResult);
 }
 
-function replaceMessages(messages) {
+async function replaceMessages(messages) {
     let params = {
         RequestItems: {
             Tables: []
         }
     };
-    return new Promise((resolve, reject) => {
-        scanTable(tables.Messages).then(evt => {
-            if (evt.err) {
-                resolve(evt);
-            } else {
-                evt.data && evt.data.forEach(msg => {
-                    params.RequestItems.Tables.push({
-                        DeleteRequest: {
-                            Key: {
-                                TableName: {S:tables.Messages},
-                                ID: { S: msg.ID }
-                            }
-                        }
-                    });
-                });
-                messages.forEach(msg => {
-                    params.RequestItems.Tables.push({
-                        PutRequest: {
-                            Item: {
-                                TableName: {S:tables.Messages},
-                                ID: { S: guid() },
-                                text: { S: msg }
-                            }
-                        }
-                    });
-                });
-                dynamodb.batchWriteItem(params, function (err, data) {
-                    resolve({ err, data });
-                });
+    const data = await scanTable(tables.Messages)
+    data && data.forEach(msg => {
+        params.RequestItems.Tables.push({
+            DeleteRequest: {
+                Key: {
+                    TableName: {S:tables.Messages},
+                    ID: { S: msg.ID }
+                }
             }
         });
     });
+    messages.forEach(msg => {
+        params.RequestItems.Tables.push({
+            PutRequest: {
+                Item: {
+                    TableName: {S:tables.Messages},
+                    ID: { S: guid() },
+                    text: { S: msg }
+                }
+            }
+        });
+    });
+    return dynamodb.batchWriteItem(params).promise();
 }
 
 function scanTable(tableName) {
@@ -349,18 +327,15 @@ function scanTable(tableName) {
         KeyConditionExpression: "TableName = :v1", 
         TableName: "Tables"
     };
-    return new Promise((resolve, reject) => {
-        dynamodb.query(params, returnScanResult(resolve));
-    });
+    return dynamodb.query(params).promise().then(returnScanResult);
 }
 
-function returnScanResult(resolve) {
-    return (err, data) => {
-        if (data && data.Items) {
-            data.Items.forEach(parseDynamoItem);
-        }
-        resolve({ err, data: data && data.Items });
-    };
+function returnScanResult(data) {
+    if (data && data.Items) {
+        data.Items.forEach(parseDynamoItem);
+        return data && data.Items;
+    }
+    return data;
 }
 
 function parseDynamoItem(item) {
@@ -424,21 +399,6 @@ function appendFieldToUpdateQuery(query, field, objFields, isLast) {
     query.UpdateExpression += `#${field} = :${field}${isLast ? '' : ', '}`;
 }
 
-function updateTableCapacity(table, read, write){
-    const params = {
-        ProvisionedThroughput: {
-            ReadCapacityUnits: read,
-            WriteCapacityUnits: write
-        }, 
-        TableName: table
-    };
-    return new Promise((resolve,reject)=>{
-        dynamodb.updateTable(params, function(err, data) {
-            resolve({err,data});
-        });
-    });
-}
-
 function createDynamoItem(item){
     const newItem = {};
     for (let key in item){
@@ -473,7 +433,6 @@ module.exports = {
     getUsersReport,
     deleteConfirmDetails,
     replaceMessages,
-    updateTableCapacity,
     batchWriteUsers,
     saveErrorLog,
 }

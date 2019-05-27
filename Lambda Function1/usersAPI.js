@@ -1,5 +1,4 @@
-﻿'use strict';
-
+﻿const bcrypt = require('bcrypt');
 const loginManager = require('./loginManager');
 const dal = require('./dal');
 
@@ -76,35 +75,34 @@ const searchUserById = (event, context, callback) => {
 };
 
 const passwordLogin = (event, context, callback) => {
-    dal.getUserById(event.ID).
-        then(evt => {
-            console.log(evt);
-            const user = evt.data && evt.data.Item;
+    dal.getUserById(event.ID).then(async evt => {
+        const user = evt.data && evt.data.Item;
+        if (evt.err) {
+            callback(evt.err);
+            return;
+        } 
+        if (!user) {
+            callback('משתמש לא נמצא');
+            return;
+        }
 
-            if (evt.err) {
-                callback(evt.err);
-            } else if (!user) {
-                callback('משתמש לא נמצא');
-            } else if ((!user.password) || (user.password !== event.password)) {
-                callback(null, {wrongPassword:true});
-            } else if (user.password === event.password) {
-                const cookie = loginManager.generateCookie();
-                dal.updateUserEnterTime(event.ID).then(()=>{
-                    
-                    dal.saveCookie(cookie.cookieToken, event.ID).then(evt => {
-                        console.log(evt);
-                        
-                        if (evt.err) {
-                            callback(evt.err);
-                        } else {
-                            callback(null, {user},200,cookie.cookieString);
-                        }
-                    })
-                    .catch(callback);
-                })
-                .catch(callback);
+        if (!user.password || !bcrypt.compareSync(event.password, user.password)) {
+            callback(null, {wrongPassword: true});
+            return;
+        }
+        const cookie = loginManager.generateCookie();
+        try {
+            await dal.updateUserEnterTime(event.ID);
+            const res = await dal.saveCookie(cookie.cookieToken, event.ID);
+            if (res.err) {
+                callback(res.err);
+            } else {
+                callback(null, {user},200,cookie.cookieString);
             }
-        });
+        } catch (e) {
+            callback(e);
+        }
+    });
 };
 
 const getConnectedUser = (event, context, callback) => {

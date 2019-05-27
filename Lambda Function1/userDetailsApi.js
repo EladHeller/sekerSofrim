@@ -1,8 +1,10 @@
-﻿'use strict';
+﻿const bcrypt = require('bcrypt');
+const {hashPassword} = require('./loginManager');
 const dal = require('./dal');
+
 const updateUserDetails = (event, context, callback) => {
     dal.updateUserDetails(event.ID,
-        event.password && event.password.trim(),
+        event.password && hashPassword(event.password.trim()),
         event.firstName && event.firstName.trim(),
         event.lastName && event.lastName.trim(),
         event.pseudonym && event.pseudonym.trim(),
@@ -15,4 +17,6 @@ const updateUserDetails = (event, context, callback) => {
         .catch(callback);
 };
 
-exports.updateUserDetails = updateUserDetails;
+module.exports = {
+    updateUserDetails
+};

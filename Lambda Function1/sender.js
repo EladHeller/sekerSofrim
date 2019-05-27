@@ -1,13 +1,9 @@
-﻿'use strict';
-
-const AWS = require('aws-sdk');
+﻿const AWS = require('aws-sdk');
 AWS.config.region = 'us-west-2';
-
-exports.sendMail = sendMail;
-exports.sendSMS = sendSMS;
+const sns = new AWS.SNS({ apiVersion: '2010-03-31' });
+const ses = new AWS.SES({ apiVersion: '2010-12-01' });
 
 function sendMail(to, subject, text) {
-    const ses = new AWS.SES({ apiVersion: '2010-12-01' });
     var params = {
         Destination: {
             BccAddresses: [
@@ -29,18 +25,15 @@ function sendMail(to, subject, text) {
         },
         Source: 'Seker Sofrim <ssofrim@gmail.com>'
     };
-    const promise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         ses.sendEmail(params, (err, data) => {
             resolve({ err, data });
         });
     });
-    return promise;
 }
 
-function sendSMS(msg, phone) {
-    const sns = new AWS.SNS({ apiVersion: '2010-03-31' });
-    
-    const promise = new Promise((resolve, reject) => {
+const sendSMS = (msg, phone) =>
+    new Promise((resolve, reject) => {
         if (phone.startsWith('0')){
             phone = '+972' + phone.substr(1);
         }
@@ -53,5 +46,8 @@ function sendSMS(msg, phone) {
             resolve({ err, data });
         });
     });
-    return promise;
-}
+
+module.exports = {
+    sendMail,
+    sendSMS,
+};

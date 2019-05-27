@@ -1,5 +1,5 @@
 'use strict';
-
+const phin = require('phin');
 const dal = require('./dal');
 const adminApi = require('./adminAPI');
 const userDetailsApi = require('./userDetailsApi');
@@ -8,10 +8,10 @@ const messagesApi = require('./messagesApi');
 const systemApi = require('./systemAPI');
 
 const methodByResource = {
-    '/idlogin': api(usersAPI.searchUserById, 'POST'),
+    '/idlogin': captchaApi(usersAPI.searchUserById, 'POST'),
     '/getconnecteduser': api(usersAPI.getConnectedUser, 'POST'),
     '/logout': api(usersAPI.logOut, 'POST'),
-    '/passwordlogin': api(usersAPI.passwordLogin, 'POST'),
+    '/passwordlogin': captchaApi(usersAPI.passwordLogin, 'POST'),
     '/resetpassword': api(usersAPI.resetPassword, 'POST'),
     '/getmessages': api(messagesApi.getMessages, 'POST'),
     '/updateuserdetails': authorize(userDetailsApi.updateUserDetails, 'POST'),
@@ -36,6 +36,35 @@ function api(originalFunction, httpMethod) {
             event.Cookie = cookie;
             console.log(event);
             originalFunction(event, context, callback);
+        }
+    };
+}
+
+function captchaApi(originalFunction, httpMethod) {
+    return (event, context, callback) => {
+        if (event.httpMethod !== httpMethod) {
+            callback({ message: 'Method Not Allowed' }, null, 405);
+        } else {
+            const cookie = event.headers.Cookie;
+
+            event = JSON.parse(event.body) || {};
+
+            event.Cookie = cookie;
+            console.log(event);
+            phin({
+                url: `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET}&response=${event.captchaData}`,
+                parse: 'json',
+                method: 'POST',
+            }).then(({body : {success}}) => {
+                if (success) {
+                    originalFunction(event, context, callback);
+                } else {
+                    callback({ message: 'Error' }, null, 500);
+                }
+            }).catch((e) => {
+                console.error(e);
+                callback({ message: e.message }, null, 500);
+            });
         }
     };
 }

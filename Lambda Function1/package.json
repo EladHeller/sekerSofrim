@@ -4,7 +4,8 @@
   "description": "",
   "main": "driver/_testdriver.js",
   "dependencies": {
-    "aws-sdk": "^2.1.8"
+    "aws-sdk": "^2.1.8",
+    "phin": "^3.3.0"
   },
   "devDependencies": {},
   "scripts": {

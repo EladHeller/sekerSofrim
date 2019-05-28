@@ -1,10 +1,12 @@
-﻿const bcrypt = require('bcrypt');
-const {hashPassword} = require('./loginManager');
+﻿const {hashPassword} = require('./loginManager');
 const dal = require('./dal');
+
+// minimum 6 characters, contains at least one english letter, not starts or ends with white space
+const passwordRegex = /(?=.{6,})d(?=.*[a-zA-Z]+.*)(?=^(?:(?!^\s|\s$).)*$)/;
 
 const updateUserDetails = (event, context, callback) => {
     dal.updateUserDetails(event.ID,
-        event.password && hashPassword(event.password.trim()),
+        event.password && event.password.match(passwordRegex) && hashPassword(event.password),
         event.firstName && event.firstName.trim(),
         event.lastName && event.lastName.trim(),
         event.pseudonym && event.pseudonym.trim(),

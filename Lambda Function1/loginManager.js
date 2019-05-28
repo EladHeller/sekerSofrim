@@ -43,7 +43,18 @@ function createUserPassword(ID, mailAddress, phone) {
     });
 }
 
-const generatePassword = () => Math.random().toString().substring(2, 9);
+
+const generatePassword = () => {
+    let rnd = Math.random();
+    const num = rnd.toString().substring(2, 7);
+    let char = rnd.toString(36)[3];
+    while (char === 'o') {
+      rnd = Math.random();
+      char = rnd.toString(36)[3];
+    }
+    const pos = Math.floor(Math.random() * 6);
+    return `${num.slice(0, pos)}${char}${num.slice(pos)}`;
+  }
 
 module.exports = {
     hashPassword,

@@ -3,7 +3,6 @@ const cookieParser = require('cookie-parser');
 const {rootApi} = require('./Lambda Function1/rootAPI');
 const app = express();
 
-
 app.use(function( req, res, next ) {
   var data = '';
   req.on('data', function( chunk ) {

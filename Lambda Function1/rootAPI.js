@@ -1,4 +1,3 @@
-'use strict';
 const phin = require('phin');
 const dal = require('./dal');
 const adminApi = require('./adminAPI');

@@ -1,97 +1,16 @@
-const phin = require('phin');
 const dal = require('./dal');
-const adminApi = require('./adminAPI');
-const userDetailsApi = require('./userDetailsApi');
-const usersAPI = require('./usersAPI');
-const messagesApi = require('./messagesApi');
-const systemApi = require('./systemAPI');
+const {methodByResource} = require('./router');
 
-const methodByResource = {
-    '/idlogin': captchaApi(usersAPI.searchUserById, 'POST'),
-    '/getconnecteduser': api(usersAPI.getConnectedUser, 'POST'),
-    '/logout': api(usersAPI.logOut, 'POST'),
-    '/passwordlogin': captchaApi(usersAPI.passwordLogin, 'POST'),
-    '/resetpassword': api(usersAPI.resetPassword, 'POST'),
-    '/getmessages': api(messagesApi.getMessages, 'POST'),
-    '/updateuserdetails': authorize(userDetailsApi.updateUserDetails, 'POST'),
-    '/getuserdetailsconfirms': authorizeAdmin(adminApi.getUserDetailsConfirms, 'POST'),
-    '/getusersreport': authorizeAdmin(adminApi.getUsersReport, 'POST'),
-    '/uploadusers': authorizeAdmin(adminApi.uploadUsers, 'POST'),
-    '/requestupdateuserdetails': api(usersAPI.requestUpdateUserDetails, 'POST'),
-    '/confirmuserdetails': authorizeAdmin(adminApi.confirmUserDetails, 'POST'),
-    '/replacemessages': authorizeAdmin(adminApi.replaceMessages, 'POST'),
-    '/error': api(systemApi.saveErrorLog, 'POST')
-};
+const allowedOrigins = [
+    'https://ssofrim.com',
+    'https://www.ssofrim.com',
+    'http://localhost:'
+];
 
-function api(originalFunction, httpMethod) {
-    return (event, context, callback) => {
-        if (event.httpMethod !== httpMethod) {
-            callback({ message: 'Method Not Allowed' }, null, 405);
-        } else {
-            const cookie = event.headers.Cookie;
-
-            event = JSON.parse(event.body) || {};
-
-            event.Cookie = cookie;
-            console.log(event);
-            originalFunction(event, context, callback);
-        }
-    };
-}
-
-function captchaApi(originalFunction, httpMethod) {
-    return (event, context, callback) => {
-        if (event.httpMethod !== httpMethod) {
-            callback({ message: 'Method Not Allowed' }, null, 405);
-        } else {
-            const cookie = event.headers.Cookie;
-
-            event = JSON.parse(event.body) || {};
-
-            event.Cookie = cookie;
-            console.log(event);
-            phin({
-                url: `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET}&response=${event.captchaData}`,
-                parse: 'json',
-                method: 'POST',
-            }).then(({body : {success}}) => {
-                if (success) {
-                    originalFunction(event, context, callback);
-                } else {
-                    callback({ message: 'Error' }, null, 500);
-                }
-            }).catch((e) => {
-                console.error(e);
-                callback({ message: e.message }, null, 500);
-            });
-        }
-    };
-}
 function isString(obj) {
     return Object.prototype.toString.call(obj) === '[object String]';
 }
 
-function rootApi(event, context, callback) {
-    console.log(event);
-    let site = 'https://ssofrim.com';
-    let wSite = 'https://www.ssofrim.com';
-    let origin = event.headers.Origin || event.headers.origin;
-    
-    if (origin) {
-        if (origin.startsWith('http://localhost:') || origin.startsWith(site) || origin.startsWith(wSite)){
-            const done = getDoneFunction(callback, origin, event);
-            
-            try {
-                console.log(event.path);
-                methodByResource[event.path.toLowerCase()](event, context, done);
-            } catch (e) {
-                done(e)
-            }
-        } else {
-            getDoneFunction(callback, origin,event)('no-cors',null,403);
-        }
-    }   
-}
 
 function getError(err) {
     let error;
@@ -117,65 +36,46 @@ function getRes(res) {
     }
 }
 
-function getDoneFunction(callback, origin, event) {
-    return (err, res, statusCode, cookieString, contentType) => {
-        console.log('getDoneFunction', err, res, cookieString? `Cookie ${cookieString}`:'');
+const getHeaders = (origin, contentType, cookieString) => {
+    const headers = {
+        'Content-Type': contentType || 'application/json',
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Credentials': true
+    };
+    if (cookieString) {
+        headers['Set-Cookie'] = cookieString;
+    }
+    return headers;
+};
+
+async function rootApi(event) {
+    console.log(event);
+    let origin = event.headers.Origin || event.headers.origin;
+    
+    if (origin && allowedOrigins.some(org => origin.startsWith(org))) {
         try {
-            let params = {
-                statusCode: statusCode || (err ? '500' : '200'),
-                body: err ? getError(err) : getRes(res),
-                headers: {
-                    'Content-Type': contentType || 'application/json',
-                    'Access-Control-Allow-Origin': origin,
-                    'Access-Control-Allow-Credentials': true
-                }
-            };
-            if (err) {
-                dal.saveErrorLog(params.body, event)
-                    .then(callback(null, params))
-                    .catch(err => {});
-            } else {
-
-                if (cookieString) {
-                    params.headers['Set-Cookie'] = cookieString;
-                }
-                callback(null, params);
+            console.log(event.path);
+            const res = await methodByResource[event.path.toLowerCase()](event);
+            return {
+                body: getRes(res.body || res),
+                statusCode: res.status || 200,
+                headers: getHeaders(origin, res.contentType, res.cookieString)
             }
-
         } catch (e) {
-            callback(e);
+            dal.saveErrorLog(e, event).catch(err => console.error('Failed to save error', err));
+            return {
+                body: getError(e),
+                statusCode: 500,
+                headers: getHeaders(origin)
+            }
         }
-
-    };
-}
-
-function authorize(originalFunction, httpMethod, admin) {
-    return (event, context, callback) => {
-        if (event.httpMethod !== httpMethod) {
-            callback('Method Not Allowed', null, 405);
-        } else if (!event.headers.Cookie) {
-            callback("You need to log on for this action", null, 401);
-        } else {
-            const promise = admin ? dal.getUserByCookie(event.headers.Cookie) : dal.getIdByCookie(event.headers.Cookie);
-            promise.then(data => {
-                if (!data.Item || (admin && !(data.Item && data.Item.isAdmin))) {
-                    callback("You don't have permissions for this action", null, 401);
-                } else {
-                    event = JSON.parse(event.body) || {};
-                    if (!admin) {
-                        event.ID = data.Item.UID;
-                    }
-                    console.log(event);
-                    originalFunction(event, context, callback);
-                }
-            })
-            .catch(callback);
+    } else {
+        return {
+            body: 'no-cors',
+            statusCode: 403,
+            headers: getHeaders(origin)
         }
-    };
-}
-
-function authorizeAdmin(originalFunction, httpMethod) {
-    return authorize(originalFunction, httpMethod, true);
+    }
 }
 
 module.exports = {

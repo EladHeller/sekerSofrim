@@ -131,11 +131,9 @@ function getDoneFunction(callback, origin, event) {
                 }
             };
             if (err) {
-                try {
-                    dal.saveErrorLog(params.body, event).then(() => {
-                        callback(null, params);
-                    });
-                } catch (e) { }
+                dal.saveErrorLog(params.body, event)
+                    .then(callback(null, params))
+                    .catch(err => {});
             } else {
 
                 if (cookieString) {
@@ -159,15 +157,13 @@ function authorize(originalFunction, httpMethod, admin) {
             callback("You need to log on for this action", null, 401);
         } else {
             const promise = admin ? dal.getUserByCookie(event.headers.Cookie) : dal.getIdByCookie(event.headers.Cookie);
-            promise.then(evt => {
-                if (evt.err) {
-                    callback({ err: evt.err });
-                } else if (!evt.data.Item || (admin && !(evt.data.Item && evt.data.Item.isAdmin))) {
+            promise.then(data => {
+                if (!data.Item || (admin && !(data.Item && data.Item.isAdmin))) {
                     callback("You don't have permissions for this action", null, 401);
                 } else {
                     event = JSON.parse(event.body) || {};
                     if (!admin) {
-                        event.ID = evt.data.Item.UID;
+                        event.ID = data.Item.UID;
                     }
                     console.log(event);
                     originalFunction(event, context, callback);

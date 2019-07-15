@@ -44,7 +44,7 @@ async function batchWriteUsers(users){
     return data;
 }
 
-function deleteConfirmDetails(ID) {
+async function deleteConfirmDetails(ID) {
     const params = {
         Key: {
             ID: { S: ID },
@@ -52,12 +52,7 @@ function deleteConfirmDetails(ID) {
         },
         TableName: tables.Tables
     };
-    const promise = new Promise((resolve, reject) => {
-        dynamodb.deleteItem(params, function (err, data) {
-            resolve({ err, data });
-        });
-    });
-    return promise;
+    return dynamodb.deleteItem(params).promise();
 }
 
 function updateUserEnterTime(ID) {
@@ -78,15 +73,10 @@ function updateUserEnterTime(ID) {
         }
     };
 
-    const promise = new Promise((resolve, reject) => {
-        dynamodb.updateItem(params, (err, data) => {
-            resolve({ err, data });
-        });
-    });
-    return promise;
+    return dynamodb.updateItem(params).promise();
 }
 
-function deleteCookie(cookie) {
+async function deleteCookie(cookie) {
     const params = {
         Key: {
             ID: { S: cookie },
@@ -94,26 +84,18 @@ function deleteCookie(cookie) {
         },
         TableName: tables.Tables
     };
-    const promise = new Promise((resolve, reject) => {
-        dynamodb.deleteItem(params, function (err, data) {
-            resolve({ err, data });
-        });
-    });
-    return promise;
+    return dynamodb.deleteItem(params).promise();
 }
 
 const getUserByCookie = async (cookie) => {
-    const {err, data} = await getIdByCookie(cookie)
-    if (err) {
-        return {err};
-    }
+    const data = await getIdByCookie(cookie);
     if (!data || !data.Item) {
         return {data: {user: null}};
     }
     return getUserById(data.Item.UID)
 }
 
-function addUserConfirmation(ID, firstName, lastName, pseudonym, email, phone, tel) {
+async function addUserConfirmation(ID, firstName, lastName, pseudonym, email, phone, tel) {
     const params = {
         TableName: tables.Tables, Item: {
             TableName:{S: tables.ChangeDetailsConfirmations},
@@ -133,14 +115,10 @@ function addUserConfirmation(ID, firstName, lastName, pseudonym, email, phone, t
         params.Item.pseudonym = { S: pseudonym };
     }
 
-    return new Promise((resolve) => {
-        dynamodb.putItem(params, (err, data) => {
-            resolve({ err, data });
-        });
-    });
+    return dynamodb.putItem(params).promise();
 }
 
-function updateUserDetails(ID, password, firstName, lastName, pseudonym, email, phone, tel, award) {
+async function updateUserDetails(ID, password, firstName, lastName, pseudonym, email, phone, tel, award) {
     const fields = {
         p: { name: 'password', value: password },
         fn: { name: 'firstName', value: firstName },
@@ -154,18 +132,14 @@ function updateUserDetails(ID, password, firstName, lastName, pseudonym, email, 
             
     const keyObj = {TableName: tables.Users, ID: ID.toString() };
     const params = createUpdateQuery(tables.Tables, keyObj, fields);
-    return new Promise((resolve, reject) => {
-        if (!params) {
-            resolve({});
-        } else {
-            dynamodb.updateItem(params, (err, data) => {
-                resolve({ err, data });
-            });
-        }
-    });
+    if (!params) {
+        return {};
+    } else {
+        return dynamodb.updateItem(params).promise();
+    }
 }
 
-function getUserById(ID) {
+async function getUserById(ID) {
     const params = {
         "Key": {
             "ID": {
@@ -175,30 +149,23 @@ function getUserById(ID) {
         },
         TableName: tables.Tables
     };
-    const promise = new Promise((resolve, reject) => {
-        dynamodb.getItem(params, (err, data) => {
-            if (data && data.Item) {
-                parseDynamoItem(data.Item);
-            }
-            resolve({ err, data });
-        });
-    });
-    return promise;
+    const data = await dynamodb.getItem(params).promise();
+    if (data && data.Item) {
+        parseDynamoItem(data.Item);
+    }
+    return data;
 }
 
-function getIdByCookie(cookie) {
+async function getIdByCookie(cookie) {
     const params = {Key: {ID: {S: cookie}, TableName: { S: tables.Cookies }}, TableName: tables.Tables}
-    return new Promise((resolve, reject) => {
-        dynamodb.getItem(params, (err, data) => {
-            if (data.Item) {
-                parseDynamoItem(data.Item);
-            }
-            resolve({ err, data });
-        });
-    });
+    const data = await dynamodb.getItem(params).promise();
+    if (data.Item) {
+        parseDynamoItem(data.Item);
+    }
+    return data;
 }
 
-function saveCookie(cookie, ID) {
+async function saveCookie(cookie, ID) {
     const params = {
         TableName: tables.Tables, Item: {
             TableName: {S:tables.Cookies},
@@ -207,14 +174,10 @@ function saveCookie(cookie, ID) {
             date: { N: Date.now().toString() }
         }
     };
-    return new Promise((resolve, success) => {
-        dynamodb.putItem(params, (err, data) => {
-            resolve({ err, data });
-        });
-    });
+    return dynamodb.putItem(params).promise();
 }
 
-function saveErrorLog(err, event) {
+async function saveErrorLog(err, event) {
     const params = {
         TableName: tables.Tables, Item: {
             TableName: { S: tables.Errors },
@@ -224,11 +187,7 @@ function saveErrorLog(err, event) {
             event: {S: JSON.stringify(event) }
         }
     };
-    return new Promise((resolve, success) => {
-        dynamodb.putItem(params, (err, data) => {
-            resolve({ err, data });
-        });
-    });
+    return dynamodb.putItem(params).promise();
 }
 
 function updatePassword(ID, password) {
@@ -251,11 +210,7 @@ function updatePassword(ID, password) {
         }
     };
 
-    return new Promise((resolve, reject) => {
-        dynamodb.updateItem(params, (err, data) => {
-            resolve({ err, data });
-        });
-    });
+    return dynamodb.updateItem(params).promise();
 }
 
 function getUsersReport() {

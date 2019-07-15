@@ -6,7 +6,7 @@ const getMessages = (event, context, callback) => {
     dal.scanTable("Messages").then(data => {
         callback(null, data);
     })
-    .catch(err => callback({err}));
+    .catch(callback);
 };
 
 exports.getMessages = getMessages;

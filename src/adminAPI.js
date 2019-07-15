@@ -1,7 +1,6 @@
 'use strict';
 
 const dal = require('./dal');
-const utils = require('./utils');
 const sender = require('./sender');
 const adminBL = require('./BL/adminBL');
 
@@ -9,7 +8,7 @@ const getUserDetailsConfirms = (event, context, callback) => {
     dal.scanTable('ChangeDetailsConfirmations').then(data => {
         callback(null, data);
     })
-    .catch(err => callback({err}));
+    .catch(callback);
 };
 
 const getUsersReport = (event, context, callback) => {
@@ -22,19 +21,19 @@ const getUsersReport = (event, context, callback) => {
         });
         callback(null, data);
     })
-    .catch(err => callback({err}));
+    .catch(callback);
 };
 
 const replaceMessages = (event, context, callback) => {
     dal.replaceMessages(event.messages).then(() => {
         callback(null, { message: 'success' });
     })
-    .catch(err => callback({err}));
+    .catch(callback);
 };
 
 const uploadUsers = (event, context, callback) => {
     let users = event.users;
-    users.forEach(user=>{
+    users.forEach(user=> {
         if (user.award) {
             user.award = Number(user.award).toFixed(2);
         }
@@ -42,7 +41,7 @@ const uploadUsers = (event, context, callback) => {
     adminBL.updateUsers(users).then(data=> {
         callback(null, {message: 'success'});
     })
-    .catch(err => callback({err}));
+    .catch(callback);
 };
 
 const confirmUserDetails = (event, context, callback) => {
@@ -54,26 +53,16 @@ const confirmUserDetails = (event, context, callback) => {
         event.email && event.email.trim(),
         event.phone && event.phone.trim(),
         event.tel && event.tel.trim())
-        .then(evt => {
-            if (evt.err) {
-                callback(evt.err);
-            } else {
-                dal.deleteConfirmDetails(event.ID)
-                    .then(evt => {
-                        if (event.email) {
-                            sender.sendMail([event.email], 'פרטיך באתר סקר סופרים עודכנו בהצלחה!', `כעת ניתן לחזור לאתר: http://ssofrim.com ולעדכן את שמות ספריך ובכך לסיים את ההרשמה.`)
-                                .then(evt => {
-                                    callback(evt.err, { isSaved: true, ID: event.ID });
-                                });
-                        } else if (event.phone) {
-                            sender.sendSMS('פרטיך באתר סקר סופרים עודכנו בהצלחה!', event.phone)
-                                .then(evt => {
-                                    callback(evt.err, { isSaved: true, ID: event.ID });
-                                });
-                        }
-                    })
-                    .catch(callback);
+        .then(async () => {
+            await dal.deleteConfirmDetails(event.ID);
+            if (event.email) {
+                await sender.sendMail([event.email],
+                    'פרטיך באתר סקר סופרים עודכנו בהצלחה!',
+                    '<p style="direction:rtl;">כעת ניתן לחזור לאתר: http://ssofrim.com ולעדכן את שמות ספריך ובכך לסיים את ההרשמה.</p>');
+            } else if (event.phone) {
+                await sender.sendSMS('פרטיך באתר סקר סופרים עודכנו בהצלחה!', event.phone);
             }
+            callback(null, { isSaved: true, ID: event.ID });
         })
         .catch(callback);
 };

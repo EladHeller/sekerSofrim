@@ -14,43 +14,34 @@ function generateCookie() {
     date.setTime(+ date + (7 * 86400000)); //24 \* 60 \* 60 \* 1000
     const cookieVal = Math.random().toString(36).substring(7); // Generate a random cookie string
     const cookieToken = `token=${cookieVal}`;
-    const domain = '7npxc1c5ll.execute-api.us-west-2.amazonaws.com';//'1tmm0szfph.execute-api.us-west-2.amazonaws.com';
-    const cookieString = `${cookieToken}; domain=${domain}; expires=${date.toGMTString()};`;
+    const cookieString = `${cookieToken}; domain=${process.env.DOMAIN}; expires=${date.toGMTString()};`;
 
     return {cookieString,cookieToken};
 }
 
-function createUserPassword(ID, mailAddress, phone) {
+async function createUserPassword(ID, mailAddress, phone) {
     const password = generatePassword();
 
     const hashedPassword = hashPassword(password);
-
-    return new Promise((resolve, reject) => {
-        dal.updatePassword(ID, hashedPassword).then(evt=>{
-            const msg = `סיסמתך החדשה לאתר סקר סופרים היא ${password}`;
-            if (evt.err) {
-                resolve({ err : evt.err});
-            } else if (mailAddress) {
-                sender.sendMail([mailAddress], 'סיסמה חדשה לאתר סקר סופרים', msg)
-                    .then(resolve)
-                    .catch(reject);
-            } else if (phone) {
-                sender.sendSMS(msg, phone)
-                    .then(resolve)
-                    .catch(reject);
-            }
-        });
-    });
+    await dal.updatePassword(ID, hashedPassword);
+    const msg = `סיסמתך החדשה לאתר סקר סופרים היא ${password}`;
+    if (mailAddress) {
+        return sender.sendMail([mailAddress],
+            'סיסמה חדשה לאתר סקר סופרים',
+            `<p style="direction:rtl;">${msg}</p>`);
+    } else if (phone) {
+        return sender.sendSMS(msg, phone);
+    }
 }
 
 
 const generatePassword = () => {
     let rnd = Math.random();
     const num = rnd.toString().substring(2, 7);
-    let char = rnd.toString(36)[3];
-    while (char === 'o') {
+    let char = String.fromCharCode(Math.floor(rnd * 26) + 65);
+    while (char === 'O') {
       rnd = Math.random();
-      char = rnd.toString(36)[3];
+      char = String.fromCharCode(Math.floor(rnd * 26) + 65);
     }
     const pos = Math.floor(Math.random() * 6);
     return `${num.slice(0, pos)}${char}${num.slice(pos)}`;

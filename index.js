@@ -1,7 +1,11 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
-const {rootApi} = require('./Lambda Function1/rootAPI');
+const {rootApi} = require('./src/rootAPI');
+const {domain, recaptchaSecret} = require('./config');
 const app = express();
+
+process.env.DOMAIN = domain;
+process.env.RECAPTCHA_SECRET = recaptchaSecret;
 
 app.use(function( req, res, next ) {
   var data = '';

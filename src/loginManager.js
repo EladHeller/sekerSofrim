@@ -14,7 +14,7 @@ function generateCookie() {
     date.setTime(+ date + (7 * 86400000)); //24 \* 60 \* 60 \* 1000
     const cookieVal = Math.random().toString(36).substring(7); // Generate a random cookie string
     const cookieToken = `token=${cookieVal}`;
-    const cookieString = `${cookieToken}; domain=${process.env.DOMAIN}; expires=${date.toGMTString()};`;
+    const cookieString = `${cookieToken}; domain=${process.env.DOMAIN}; expires=${date.toGMTString()}; SameSite=None; Secure`;
 
     return {cookieString,cookieToken};
 }

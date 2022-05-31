@@ -5,7 +5,7 @@
   "main": "driver/_testdriver.js",
   "dependencies": {
     "aws-sdk": "^2.814.0",
-    "bcrypt": "^3.0.6",
+    "bcrypt": "^5.0.0",
     "phin": "^3.3.0"
   },
   "devDependencies": {},

@@ -6,7 +6,7 @@
   "dependencies": {
     "aws-sdk": "^2.1421.0",
     "bcrypt": "^5.1.0",
-    "phin": "^3.3.0"
+    "phin": "^3.7.1"
   },
   "devDependencies": {},
   "scripts": {

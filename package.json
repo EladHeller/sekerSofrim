@@ -23,6 +23,6 @@
     "archiver": "^3.0.0",
     "aws-sdk": "^2.1354.0",
     "cookie-parser": "^1.4.4",
-    "express": "^4.19.2"
+    "express": "^4.20.0"
   }
 }

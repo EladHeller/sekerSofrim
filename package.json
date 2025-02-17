@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "build": "sh ./pre-build.sh && node build.js && sh ./post-build.sh",
-    "build:prod": "sh ./pre-build.sh && node build.js prod && sh ./post-build.sh"
+    "build": "sh ./deploy.sh"
   },
   "repository": {
     "type": "git",
@@ -19,9 +18,9 @@
   },
   "homepage": "https://github.com/EladHeller/sekerSofrim#readme",
   "dependencies": {
+    "@aws-sdk/client-lambda": "^3.749.0",
     "@welldone-software/env-config": "^1.1.1",
     "archiver": "^3.0.0",
-    "aws-sdk": "^2.1354.0",
     "cookie-parser": "^1.4.7",
     "express": "^4.21.2"
   }

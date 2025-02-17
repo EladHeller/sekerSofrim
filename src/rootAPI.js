@@ -4,7 +4,8 @@ const {methodByResource} = require('./router');
 const allowedOrigins = [
     'https://ssofrim.com',
     'https://www.ssofrim.com',
-    'http://localhost:'
+    'http://localhost:',
+    'https://ssofrim.s3.us-west-2.amazonaws.com',
 ];
 
 function isString(obj) {

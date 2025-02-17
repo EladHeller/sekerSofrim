@@ -1,4 +1,4 @@
-﻿const bcrypt = require('bcrypt');
+﻿const bcrypt = require('bcryptjs');
 const dal = require('../dal');
 const {hashPassword, generateCookie, createUserPassword} = require('../loginManager');
 

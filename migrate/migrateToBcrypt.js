@@ -1,5 +1,5 @@
 const dal = require('./dal');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const hashPassword = (password) => {
   const salt = bcrypt.genSaltSync();

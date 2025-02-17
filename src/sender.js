@@ -1,9 +1,10 @@
-﻿const AWS = require('aws-sdk');
-AWS.config.region = 'us-west-2';
-const sns = new AWS.SNS({ apiVersion: '2010-03-31' });
-const ses = new AWS.SES({ apiVersion: '2010-12-01' });
+﻿const { SNSClient, PublishCommand } = require('@aws-sdk/client-sns');
+const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
 
-function sendMail(to, subject, html) {
+const sns = new SNSClient({ region: 'us-west-2' });
+const ses = new SESClient({ region: 'us-west-2' });
+
+async function sendMail(to, subject, html) {
     const params = {
         Destination: {
             BccAddresses: [
@@ -25,19 +26,19 @@ function sendMail(to, subject, html) {
         },
         Source: 'Seker Sofrim <ssofrim@gmail.com>'
     };
-    return ses.sendEmail(params).promise();
+    return ses.send(new SendEmailCommand(params));
 }
 
 const sendSMS = (msg, phone) => {
-    if (phone.startsWith('0')){
+    if (phone.startsWith('0')) {
         phone = '+972' + phone.substr(1);
     }
-    phone = phone.replace('-', '').replace(' ','');
+    phone = phone.replace('-', '').replace(' ', '');
     const smsParams = {
         Message: msg,
         PhoneNumber: phone
     };
-    return sns.publish(smsParams).promise();
+    return sns.send(new PublishCommand(smsParams));
 };
 
 module.exports = {

@@ -6,6 +6,7 @@ const messagesApi = require('./api/messagesApi');
 const systemApi = require('./api/systemAPI');
 
 const api = async (func) => (event) => {
+  console.log('api', {event, func});
 	const cookie = event.headers.Cookie;
 
 	const requestBody = JSON.parse(event.body) || {};
@@ -16,6 +17,7 @@ const api = async (func) => (event) => {
 }
 
 const captchaApi = (func) => async (event) => {
+  console.log('captchaApi', {event, func});
 	const cookie = event.headers.Cookie;
 
 	const requestBody = JSON.parse(event.body) || {};
@@ -39,6 +41,7 @@ const captchaApi = (func) => async (event) => {
 
 
 const authorize = (func, admin) => async (event) => {
+  console.log('authorize', {event, func});
   if (!event.headers.Cookie) {
       return {
         body: 'You need to log on for this action',
@@ -65,7 +68,8 @@ const authorize = (func, admin) => async (event) => {
 const authorizeAdmin = (func) => authorize(func, true);
 
 const post = (func) => event => {
-  if (event.httpMethod !== httpMethod) {
+  console.log('post', {event, func});
+  if (event.httpMethod.toLowerCase() !== 'post') {
     return {
       body: 'Method Not Allowed',
       statusCode:405

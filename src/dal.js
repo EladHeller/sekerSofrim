@@ -1,7 +1,14 @@
-﻿const AWS = require('aws-sdk');
-AWS.config.region = 'us-west-2';
+﻿const {
+    DynamoDBClient,
+    BatchWriteItemCommand,
+    DeleteItemCommand,
+    UpdateItemCommand,
+    PutItemCommand,
+    GetItemCommand,
+    QueryCommand
+} = require('@aws-sdk/client-dynamodb');
 
-const dynamodb = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
+const dynamodb = new DynamoDBClient({ apiVersion: '2012-08-10' });
 
 const tables = {
     Users: 'Users',
@@ -30,9 +37,9 @@ async function batchWriteUsers(users){
     while (requests.length) {
         params.RequestItems.Tables = requests.splice(0, 25);
         promises.push(new Promise((resolve, reject) => {
-            dynamodb.batchWriteItem(params, (err, data) => {
+            dynamodb.send(new BatchWriteItemCommand(params), (err, data) => {
                 resolve({ err, data });
-            })
+            });
         }));
     }
     const values = await Promise.all(promises)
@@ -52,7 +59,7 @@ async function deleteConfirmDetails(ID) {
         },
         TableName: tables.Tables
     };
-    return dynamodb.deleteItem(params).promise();
+    return dynamodb.send(new DeleteItemCommand(params));
 }
 
 function updateUserEnterTime(ID) {
@@ -73,7 +80,7 @@ function updateUserEnterTime(ID) {
         }
     };
 
-    return dynamodb.updateItem(params).promise();
+    return dynamodb.send(new UpdateItemCommand(params));
 }
 
 async function deleteCookie(cookie) {
@@ -84,7 +91,7 @@ async function deleteCookie(cookie) {
         },
         TableName: tables.Tables
     };
-    return dynamodb.deleteItem(params).promise();
+    return dynamodb.send(new DeleteItemCommand(params));
 }
 
 const getUserByCookie = async (cookie) => {
@@ -115,7 +122,7 @@ async function addUserConfirmation(ID, firstName, lastName, pseudonym, email, ph
         params.Item.pseudonym = { S: pseudonym };
     }
 
-    return dynamodb.putItem(params).promise();
+    return dynamodb.send(new PutItemCommand(params));
 }
 
 async function updateUserDetails(ID, password, firstName, lastName, pseudonym, email, phone, tel, award) {
@@ -135,7 +142,7 @@ async function updateUserDetails(ID, password, firstName, lastName, pseudonym, e
     if (!params) {
         return {};
     } else {
-        return dynamodb.updateItem(params).promise();
+        return dynamodb.send(new UpdateItemCommand(params));
     }
 }
 
@@ -149,7 +156,7 @@ async function getUserById(ID) {
         },
         TableName: tables.Tables
     };
-    const data = await dynamodb.getItem(params).promise();
+    const data = await dynamodb.send(new GetItemCommand(params));
     if (data && data.Item) {
         parseDynamoItem(data.Item);
     }
@@ -157,8 +164,14 @@ async function getUserById(ID) {
 }
 
 async function getIdByCookie(cookie) {
-    const params = {Key: {ID: {S: cookie}, TableName: { S: tables.Cookies }}, TableName: tables.Tables}
-    const data = await dynamodb.getItem(params).promise();
+    const params = {
+        Key: {
+            ID: {S: cookie}, 
+            TableName: { S: tables.Cookies }
+        }, 
+        TableName: tables.Tables
+    }
+    const data = await dynamodb.send(new GetItemCommand(params));
     if (data.Item) {
         parseDynamoItem(data.Item);
     }
@@ -167,14 +180,15 @@ async function getIdByCookie(cookie) {
 
 async function saveCookie(cookie, ID) {
     const params = {
-        TableName: tables.Tables, Item: {
+        TableName: tables.Tables,
+        Item: {
             TableName: {S:tables.Cookies},
             ID: { S: cookie },
             UID: { S: ID },
             date: { N: Date.now().toString() }
         }
     };
-    return dynamodb.putItem(params).promise();
+    return dynamodb.send(new PutItemCommand(params));
 }
 
 async function saveErrorLog(err, event) {
@@ -187,7 +201,7 @@ async function saveErrorLog(err, event) {
             event: {S: JSON.stringify(event) }
         }
     };
-    return dynamodb.putItem(params).promise();
+    return dynamodb.send(new PutItemCommand(params));
 }
 
 function updatePassword(ID, password) {
@@ -210,7 +224,7 @@ function updatePassword(ID, password) {
         }
     };
 
-    return dynamodb.updateItem(params).promise();
+    return dynamodb.send(new UpdateItemCommand(params));
 }
 
 function getUsersReport() {
@@ -238,7 +252,7 @@ function getUsersReport() {
         KeyConditionExpression: "TableName = :v1", 
     };
 
-    return dynamodb.query(params).promise().then(returnScanResult);
+    return dynamodb.send(new QueryCommand(params)).then(returnScanResult);
 }
 
 async function replaceMessages(messages) {
@@ -269,7 +283,7 @@ async function replaceMessages(messages) {
             }
         });
     });
-    return dynamodb.batchWriteItem(params).promise();
+    return dynamodb.send(new BatchWriteItemCommand(params));
 }
 
 function scanTable(tableName) {
@@ -282,7 +296,7 @@ function scanTable(tableName) {
         KeyConditionExpression: "TableName = :v1", 
         TableName: "Tables"
     };
-    return dynamodb.query(params).promise().then(returnScanResult);
+    return dynamodb.send(new QueryCommand(params)).then(returnScanResult);
 }
 
 function returnScanResult(data) {
